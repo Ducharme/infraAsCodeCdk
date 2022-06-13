@@ -57,7 +57,7 @@ aws configure
 
 ## CodeCommit git
 
-Use file "<user>_codecommit_credentials.csv" previously generated in AWS console.
+Use file "&ltuser&gt_codecommit_credentials.csv" previously generated in AWS console.
 
 ```
 sudo apt-get install git
@@ -261,23 +261,23 @@ Once completed you should see the map with CloudFront.
 
 # Resources created by the scripts
 
-IoT Core (Thing, Security/Certificates, Security/Policy, Rules)
-SQS & SQS DLQ
-S3 buckets (4x)
-CloudFront Distribution & OAI
-CloudWatch Log Groups
-IAM/roles with inline policies
-CodeCommit (5x)
-CodeBuild (5x)
-CodePipeline (5x)
-ECR (4x)
-EC2/Instances
-EC2/LoadBalancer
-EC2/Auto Scaling Groups
-VPC/NAT gateways
-EKS cluster
-Lambda/Functions
-Lambda/Layers
+* IoT Core (Thing, Security/Certificates, Security/Policy, Rules)
+* SQS & SQS DLQ
+* S3 buckets (4x)
+* CloudFront Distribution & OAI
+* CloudWatch Log Groups
+* IAM/roles with inline policies
+* CodeCommit (5x)
+* CodeBuild (5x)
+* CodePipeline (5x)
+* ECR (4x)
+* EC2/Instances
+* EC2/LoadBalancer
+* EC2/Auto Scaling Groups
+* VPC/NAT gateways
+* EKS cluster
+* Lambda/Functions
+* Lambda/Layers
 
 
 # Playing with Kubernetes
@@ -328,7 +328,7 @@ curl -s -X DELETE -H "Content-Type: application/json" http://analytics-service/d
 
 #### For redisearch service
 
-Note: External service domain is https://<cloudfront-distribution-domaine-name> which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
+Note: External service domain is https://&ltcloudfront-distribution-domaine-name&gt which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
 
 ```
 curl -s --raw --show-error --verbose -L -X GET http://query-service
@@ -391,8 +391,8 @@ Note: It is recommended to have FORCE=TRUE
 ### Known issues
 
 Resources left after:
-IoT Core - Security/Certificates
-CloudWatch - Log Group
+* IoT Core - Security/Certificates
+* CloudWatch - Log Group
 
 
 # License
