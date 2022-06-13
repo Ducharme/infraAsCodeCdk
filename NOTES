@@ -1,0 +1,7 @@
+name: infra-as-code-cdk
+version: 0.0.1
+description": LaFleet - Infra as Code (CDK)
+homepage: https://github.com/Ducharme/infraAsCodeCdk
+keywords: aws, iot, lafleet
+author: Claude Ducharme
+license: MIT

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lafleet-devices-slow
+  namespace: default
+  labels:
+    app: devices
+    project: lafleet
+    speed: slow
+spec:
+  selector:
+    matchLabels:
+      app: devices
+  replicas: 2
+  template:
+    metadata:
+      name: devices
+      labels:
+        app: devices
+    spec:
+      containers:
+      - name: IMAGE_REPO_NAME_VALUE
+        image: IMAGE_VALUE
+        env:
+        - name: ENDPOINT
+          value: "IOT_ENDPOINT"
+        - name: TOPIC
+          value: "THING_TOPIC"
+        - name: INTERVAL
+          value: "10000"
+        - name: COUNT
+          value: "0"
+        - name: CA_FILE
+          value: "./certs/root-ca.crt"
+        - name: CERT_FILE
+          value: "./certs/certificate.pem.crt"
+        - name: KEY_FILE
+          value: "./certs/private.pem.key"
+        resources:
+          limits:
+            memory: "60Mi"
+            cpu: "80m"
+          requests:
+            memory: "30Mi"
+            cpu: "40m"
+      nodeSelector:
+        nodegroup-type: backend-standard

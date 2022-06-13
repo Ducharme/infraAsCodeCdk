@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lafleet-query-service
+  namespace: default
+  labels:
+    app: query
+    project: lafleet
+spec:
+  selector:
+    matchLabels:
+      app: query-app
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: query-app
+    spec:
+      containers:
+      - name: IMAGE_REPO_NAME_VALUE
+        image: IMAGE_VALUE
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_PORT
+          value: "3131"
+        - name: REDIS_HOST
+          value: "redisearch-service"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          limits:
+            memory: "60Mi"
+            cpu: "150m"
+          requests:
+            memory: "30Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3131
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3131
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+      nodeSelector:
+        nodegroup-type: backend-standard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: query-service
+  namespace: default
+  labels:
+    app: query-svc
+spec:
+  selector:
+    app: query-app
+  type: ClusterIP
+  ports:
+  - name: query-service-port
+    protocol: TCP
+    port: 80
+    targetPort: 3131
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: query-ingress
+  annotations:
+    kubernetes.io/ingress.class: haproxy
+    haproxy.org/check: "false" # TODO: Re-enable
+    haproxy.org/check-http: "HEAD /health HTTP/1.1"
+    haproxy.org/check-interval: "1m"
+    haproxy.org/load-balance: "leastconn"
+    # strip /query ... "/query/foobar?q=1" into "/foobar?q=1"
+    haproxy.org/path-rewrite: /query/(.*) /\1
+spec:
+    rules:
+    - http:
+        paths:
+        - path: /query
+          pathType: Prefix
+          backend:
+            service:
+              name: query-service
+              port:
+                number: 80

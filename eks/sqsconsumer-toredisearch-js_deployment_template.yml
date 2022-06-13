@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lafleet-consumers
+  namespace: default
+  labels:
+    app: consumers
+    project: lafleet
+spec:
+  selector:
+    matchLabels:
+      app: consumers-app
+  replicas: 15
+  template:
+    metadata:
+      labels:
+        app: consumers-app
+    spec:
+      serviceAccountName: lafleet-eks-sa-sqsconsumer
+      automountServiceAccountToken: false
+      containers:
+      - name: IMAGE_REPO_NAME_VALUE
+        image: IMAGE_VALUE
+        imagePullPolicy: Always
+        env:
+        - name: REDIS_HOST
+          value: "redisearch-service"
+        - name: AWS_REGION
+          value: "AWS_REGION_VALUE"
+        - name: SQS_QUEUE_URL
+          value: "SQS_QUEUE_URL_VALUE"
+        resources:
+          limits:
+            memory: "60Mi"
+            cpu: "150m"
+          requests:
+            memory: "30Mi"
+            cpu: "100m"
+      nodeSelector:
+        nodegroup-type: backend-compute
+      tolerations:
+      - key: "dedicated-compute"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"

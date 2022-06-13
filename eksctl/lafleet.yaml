@@ -1,0 +1,80 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: lafleet-cluster
+  region: ap-southeast-1
+  version: "1.21"
+
+availabilityZones: ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"]
+
+vpc:
+  nat:
+    gateway: Single
+  clusterEndpoints:
+    publicAccess: true
+    privateAccess: true
+
+managedNodeGroups:
+- name: ng-compute-x64
+  instanceType: c6i.large # 2 vCPU & 4 GiB Memory (29 pods)
+  instancePrefix: lf-c6i
+  minSize: 0
+  desiredCapacity: 1
+  maxSize: 2
+  volumeSize: 20
+  volumeType: gp3
+  maxPodsPerNode: 30
+  privateNetworking: true
+  labels:
+    nodegroup-type: backend-compute
+  taints:
+    - key: dedicated-compute
+      value: "true"
+      effect: NoSchedule
+  tags:
+    nodegroup-role: bc
+  updateConfig:
+    maxUnavailable: 1
+- name: ng-standard-x64
+  instanceType: t3.medium # 2 vCPU & 4 GiB Memory (17 pods)
+  instancePrefix: lf-t3
+  minSize: 0
+  desiredCapacity: 2
+  maxSize: 3
+  volumeSize: 20
+  volumeType: gp3
+  maxPodsPerNode: 30
+  privateNetworking: true
+  labels:
+    nodegroup-type: backend-standard
+  tags:
+    nodegroup-role: bm
+  updateConfig:
+    maxUnavailable: 1
+  iam:
+    withAddonPolicies:
+      externalDNS: true
+      certManager: true
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+  - metadata:
+      name: lafleet-eks-sa-sqsconsumer
+      labels: {aws-usage: "application"}
+    attachPolicy:
+      Version: "2012-10-17"
+      Statement:
+      - Effect: Allow
+        Action:
+        - "sqs:ReceiveMessage"
+        - "sqs:DeleteMessage"
+        Resource: '*'
+      - Effect: Allow
+        Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:DescribeLogStreams"
+        - "logs:PutLogEvents"
+        Resource: '*'

@@ -1,0 +1,186 @@
+
+# Repo mockIotGpsDeviceAwsSdkV2
+
+## nodejs
+
+License: MIT [link](https://github.com/nodejs/node#license)
+
+## typescript
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
+
+## aws-iot-device-sdk-v2
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/aws-iot-device-sdk-v2)
+
+## yargs
+
+License: MIT [link](https://www.npmjs.com/package/yargs)
+
+## dotenv
+
+License: BSD-2-Clause [link](https://www.npmjs.com/package/dotenv)
+
+
+# Repo reactFrontend
+
+## nodejs
+
+License: MIT [link](https://github.com/nodejs/node#license)
+
+## typescript
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
+
+## react
+
+License: MIT [link](https://www.npmjs.com/package/react)
+
+## react-dom
+
+License: MIT [link](https://www.npmjs.com/package/react-dom)
+
+## dotenv-webpack
+
+License: MIT [link](https://www.npmjs.com/package/dotenv-webpack)
+
+## h3-js
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/h3-js)
+
+## mapbox-gl
+
+License: Mapbox GL JS version 2.0 or higher (“Mapbox Web SDK”) must be used according to the Mapbox Terms of Service.  [link](https://www.mapbox.com/legal/tos/)
+
+## babel-loader
+
+License: MIT [link](https://www.npmjs.com/package/babel-loader)
+
+## babel/core
+
+License: MIT [link](https://www.npmjs.com/package/@babel/core)
+
+## babel/preset-env
+
+License: MIT [link](https://www.npmjs.com/package/@babel/preset-env)
+
+## babel/preset-react
+
+License: ISC [link](https://www.npmjs.com/package/@babel/preset-react)
+
+## babel/preset-typescript
+
+License: MIT [link](https://www.npmjs.com/package/@babel/preset-typescript)
+
+## css-loader
+
+License: MIT [link](https://www.npmjs.com/package/css-loader)
+
+## ts-loader
+
+License: MIT [link](https://www.npmjs.com/package/ts-loader)
+
+## copy-webpack-plugin
+
+License: MIT [link](https://www.npmjs.com/package/copy-webpack-plugin)
+
+## html-webpack-plugin
+
+License: MIT [link](https://www.npmjs.com/package/html-webpack-plugin)
+
+## style-loader
+
+License: MIT [link](https://www.npmjs.com/package/style-loader)
+
+## terser-webpack-plugin
+
+License: MIT [link](https://www.npmjs.com/package/terser-webpack-plugin)
+
+## webpack
+
+License: MIT [link](https://www.npmjs.com/package/webpack)
+
+## webpack-cli
+
+License: MIT [link](https://www.npmjs.com/package/webpack-cli)
+
+## webpack-dev-server
+
+License: MIT [link](https://www.npmjs.com/package/webpack-dev-server)
+
+## webpack-merge
+
+License: MIT [link](https://www.npmjs.com/package/webpack-merge)
+
+
+# Repo redisearchQueryClient
+
+## nodejs
+
+License: MIT [link](https://github.com/nodejs/node#license)
+
+## typescript
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
+
+## ioredis
+
+License: MIT [link](https://www.npmjs.com/package/ioredis)
+
+
+## Repo sqsConsumerToRedisearchJs
+
+## nodejs
+
+License: MIT [link](https://github.com/nodejs/node#license)
+
+## typescript
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
+
+## redis
+
+License: MIT [link](https://www.npmjs.com/package/redis)
+
+## h3-js
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/h3-js)
+
+## aws-sdk/client-sqs
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/@aws-sdk/client-sqs)
+
+
+# Repo redisPerformanceAnalyticsPy
+
+## Python 3.10
+
+License: Multiple [link](https://docs.python.org/3/license.html) GPL-compatible [link](https://www.python.org/download/releases/3.4.0/license/)
+
+## boto3
+
+License: Apache-2.0 [link](https://pypi.org/project/boto3/)
+
+## redis
+
+License: MIT [link](https://pypi.org/project/redis/)
+
+## numpy
+
+License: BSD [link](https://pypi.org/project/numpy/)
+
+## flask
+
+License: BSD [link](https://pypi.org/project/Flask/)
+
+## waitress
+
+License: ZPL 2.1 [link](https://pypi.org/project/waitress/)
+
+# kubernetes-sigs/metrics-server
+
+License: Apache-2.0 [link](https://github.com/kubernetes-sigs/metrics-server/tree/metrics-server-helm-chart-3.8.2)
+
+# RediSearch
+
+This software is subject to the terms of the Redis Source Available License Agreement. [link](https://github.com/RediSearch/RediSearch/blob/master/LICENSE)

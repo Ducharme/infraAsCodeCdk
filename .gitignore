@@ -1,0 +1,14 @@
+.env.production
+__entrypoint__.js
+lib/script-utils/node_modules
+node_modules
+cdk.out
+tmp
+
+kubectl
+get_helm.sh
+
+eks/redisearch-performance-analytics-py_service.yml
+eks/sqsconsumer-toredisearch-js_deployment.yml
+eks/redisearch-query_service.yml
+eks/devices-slow_deployment.yml

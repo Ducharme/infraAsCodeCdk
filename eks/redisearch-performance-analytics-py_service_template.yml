@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lafleet-analytics
+  namespace: default
+  labels:
+    app: analytics
+    project: lafleet
+spec:
+  selector:
+    matchLabels:
+      app: analytics-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: analytics-app
+    spec:
+      containers:
+      - name: IMAGE_REPO_NAME_VALUE
+        image: IMAGE_VALUE
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5973
+        env:
+        - name: REDIS_HOST
+          value: "redisearch-service"
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "1000m"
+          requests:
+            memory: "100Mi"
+            cpu: "50m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5973
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5973
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+      nodeSelector:
+        nodegroup-type: backend-standard
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: default
+  labels:
+    app: analytics-svc
+spec:
+  selector:
+    app: analytics-app
+  type: ClusterIP
+  ports:
+  - name: analytics-service-port
+    protocol: TCP
+    port: 80
+    targetPort: 5973
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: analytics-ingress
+  annotations:
+    kubernetes.io/ingress.class: haproxy
+    haproxy.org/check: "true"
+    haproxy.org/check-http: "/health"
+    haproxy.org/check-interval: "1m"
+    haproxy.org/load-balance: "leastconn"
+    # strip /analytics ... "/analytics/foobar?q=1" into "/foobar?q=1"
+    haproxy.org/path-rewrite: /analytics/(.*) /\1
+spec:
+    rules:
+    - http:
+        paths:
+        - path: /analytics
+          pathType: Prefix
+          backend:
+            service:
+              name: analytics-service
+              port:
+                number: 80

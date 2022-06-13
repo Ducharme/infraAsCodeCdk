@@ -1,0 +1,25 @@
+{
+    "name": "lafleet-iac-js",
+    "version": "0.0.1",
+    "description": "LaFleet - Config generation in JavaScript",
+    "homepage": "https://github.com/Ducharme/",
+    "keywords": [
+        "aws",
+        "iot",
+        "lafleet"
+    ],
+    "author": "Claude Ducharme",
+    "license": "MIT",
+    "main": "./main.js",
+    "type": "module",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "dependencies": {
+        "@aws-sdk/client-cloudformation": "^3.100.0",
+        "@aws-sdk/client-s3": "^3.100.0"
+    },
+    "devDependencies": {
+        "@types/node": "^14.14.31"
+    }
+}
