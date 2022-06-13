@@ -57,7 +57,7 @@ aws configure
 
 ## CodeCommit git
 
-Use file "&ltuser&gt_codecommit_credentials.csv" previously generated in AWS console.
+Use file "&lt;user&gt;_codecommit_credentials.csv" previously generated in AWS console.
 
 ```
 sudo apt-get install git
@@ -328,7 +328,7 @@ curl -s -X DELETE -H "Content-Type: application/json" http://analytics-service/d
 
 #### For redisearch service
 
-Note: External service domain is https://&ltcloudfront-distribution-domaine-name&gt which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
+Note: External service domain is https://&lt;cloudfront-distribution-domaine-name&gt; which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
 
 ```
 curl -s --raw --show-error --verbose -L -X GET http://query-service
