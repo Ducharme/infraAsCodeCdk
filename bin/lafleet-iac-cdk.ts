@@ -3,7 +3,8 @@ import * as cdk from 'aws-cdk-lib';
 import { CommonStack } from '../lib/CommonStack';
 import { DeviceStack } from '../lib/DeviceStack';
 import { WebsiteStack } from '../lib/WebsiteStack';
-import { ConsumerStack } from '../lib/ConsumerStack';
+import { DeviceConsumerStack } from '../lib/DeviceConsumerStack';
+import { ShapeConsumerStack } from '../lib/ShapeConsumerStack';
 import { QueryStack } from '../lib/QueryStack';
 import { AnalyticsStack } from '../lib/AnalyticsStack';
 
@@ -14,12 +15,16 @@ const commonStack = new CommonStack(app, 'LaFleet-CommonStack', {});
 
 const deviceStack = new DeviceStack(app, 'LaFleet-DeviceStack', {
     repoCodeFolder: "./tmp/github/mockIotGpsDeviceAwsSdkV2-main",
-    sqsQueueRoleArn: commonStack.sqsQueueRole.roleArn,
-    sqsQueueUrl: commonStack.sqsQueue.queueUrl
+    sqsQueueRoleArn: commonStack.deviceSqsQueue.sqsQueueRole.roleArn,
+    sqsQueueUrl: commonStack.deviceSqsQueue.sqsQueue.queueUrl
 });
 
-const consumerStack = new ConsumerStack(app, 'LaFleet-ConsumerStack', {
-    repoCodeFolder: "./tmp/github/sqsConsumerToRedisearchJs-main"
+const deviceConsumerStack = new DeviceConsumerStack(app, 'LaFleet-DeviceConsumerStack', {
+    repoCodeFolder: "./tmp/github/sqsDeviceConsumerToRedisearch-main"
+});
+
+const shapeConsumerStack = new ShapeConsumerStack(app, 'LaFleet-ShapeConsumerStack', {
+    repoCodeFolder: "./tmp/github/sqsShapeConsumerToRedisearch-main"
 });
 
 const queryStack = new QueryStack(app, 'LaFleet-QueryStack', {

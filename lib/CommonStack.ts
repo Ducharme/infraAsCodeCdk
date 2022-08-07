@@ -1,16 +1,16 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
+import { SqsQueue } from './SqsQueue';
 
 
 export interface CommonStackProps extends StackProps { };
 
 export class CommonStack extends Stack {
-  public readonly sqsQueue: sqs.Queue;
-  public readonly sqsQueueRole : iam.Role;
-  public readonly sqsDeadLetterQueue: sqs.DeadLetterQueue;
+  public readonly deviceSqsQueue: SqsQueue;
+  public readonly shapeSqSQueue : SqsQueue;
   public readonly codebuild_artifact_bucket: s3.Bucket;
   public readonly codepipeline_artifact_bucket: s3.Bucket;
   public readonly object_store_bucket: s3.Bucket;
@@ -38,6 +38,11 @@ export class CommonStack extends Stack {
       throw new Error("Environement variable S3_CODEPIPELINE_ARTIFACTS is not defined");
     }
 
+    const shape_repo_bucket_name = process.env.S3_SHAPE_REPO;
+    if (!shape_repo_bucket_name) {
+      throw new Error("Environement variable S3_SHAPE_REPO is not defined");
+    }
+    
     
     /********** S3 BUCKET **********/
 
@@ -62,6 +67,10 @@ export class CommonStack extends Stack {
       "S3BUCKET_OBJECT_STORE",  {...s3props,
         bucketName: object_store_bucket_name
     });
+    var shape_repo_bucket = new s3.Bucket(this,
+      "S3BUCKET_SHAPE_REPO",  {...s3props,
+        bucketName: shape_repo_bucket_name
+    });
 
     const s3ObjectStoreBucketNameOutput = new CfnOutput(this, "S3ObjectStoreBucketName", {
       value: this.object_store_bucket.bucketName,
@@ -70,47 +79,18 @@ export class CommonStack extends Stack {
     });
 
 
-    /********** SQS QUEUE **********/
+    /********** SQS QUEUES **********/
 
-    const sqsQueueName : string = projectName + "-device-messages";
-    const sqsDlqName : string = sqsQueueName + "-dlq";
+    const sqsDeviceQueueName : string = projectName + "-device-messages";
+    this.deviceSqsQueue = new SqsQueue(this, "SqsQueue-" + sqsDeviceQueueName, { sqsQueueName: sqsDeviceQueueName, label: "device" });
+    this.deviceSqsQueue.sqsQueue.grantSendMessages(new iam.ServicePrincipal('iot.amazonaws.com'))
 
-    const sqsProps = { maxMessageSizeBytes: 2048};
-    const sqs_queue_dlq : sqs.Queue = new sqs.Queue(this,
-      "SQS_DLQ", {...sqsProps,
-        queueName: sqsDlqName
-    });
-    this.sqsDeadLetterQueue = {maxReceiveCount: 3, queue: sqs_queue_dlq };
-    this.sqsQueue = new sqs.Queue(this,
-      "SQS_QUEUE", {...sqsProps,
-        queueName: sqsQueueName,
-        deadLetterQueue: this.sqsDeadLetterQueue
-    });
+    const sqsShapeQueueName : string = projectName + "-shape-messages";
+    this.shapeSqSQueue = new SqsQueue(this, "SqsQueue-" + sqsShapeQueueName, { sqsQueueName: sqsShapeQueueName, label: "shape" });
 
-    const sqsRole1 = new iam.Role(this, 'SQS_ROLE', {
-      assumedBy: new iam.ServicePrincipal('iot.amazonaws.com')
-    });
+    shape_repo_bucket.addEventNotification(s3.EventType.OBJECT_CREATED,
+      new s3n.SqsDestination(this.shapeSqSQueue.sqsQueue),
+      {prefix: 'latest/', suffix: '.json'});
 
-    sqsRole1.addToPolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ['sqs:SendMessage', 'sqs:ReceiveMessage'],
-        resources: [this.sqsQueue.queueArn, this.sqsDeadLetterQueue.queue.queueArn],
-      }),
-    );
-
-    this.sqsQueueRole = sqsRole1;
-
-    const sqsQueueNameOutput = new CfnOutput(this, "SqsQueueName", {
-      value: this.sqsQueue.queueName,
-      description: '',
-      exportName: 'SqsQueueName',
-    });
-
-    const sqsQueueUrlOutput = new CfnOutput(this, "SqsQueueUrl", {
-      value: this.sqsQueue.queueUrl,
-      description: '',
-      exportName: 'SqsQueueUrl',
-    });
   }
 }

@@ -94,6 +94,10 @@ export class DeviceStack extends Stack {
     });
     cfnThing.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
+    const topicFilter = thingTopic.replace("+", "${iot:ClientId}");
+    const clientFilter = "${iot:ClientId}";
+    // NOTE: When not set properly the connect might success but first message afterward will disconnect.
+    // -> Error: libaws-c-mqtt: AWS_ERROR_MQTT_UNEXPECTED_HANGUP, The connection was closed unexpectedly.
     const cfnPolicy = new iot.CfnPolicy(this, 'Thing-' + devicePolicyName, {
       policyName: thingPolicyName,
       policyDocument: {
@@ -107,7 +111,7 @@ export class DeviceStack extends Stack {
               "iot:Subscribe"
             ],
             Resource: [
-              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${thingTopic}`
+              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${topicFilter}`
             ]
           },
           {
@@ -116,7 +120,7 @@ export class DeviceStack extends Stack {
               "iot:Connect"
             ],
             Resource: [
-              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:client/*`
+              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:client/${clientFilter}`
             ]
           }
         ]

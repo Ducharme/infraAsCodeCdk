@@ -61,7 +61,7 @@ iam:
   withOIDC: true
   serviceAccounts:
   - metadata:
-      name: lafleet-eks-sa-sqsconsumer
+      name: lafleet-eks-sa-sqsdeviceconsumer
       labels: {aws-usage: "application"}
     attachPolicy:
       Version: "2012-10-17"
@@ -77,4 +77,29 @@ iam:
         - "logs:CreateLogStream"
         - "logs:DescribeLogStreams"
         - "logs:PutLogEvents"
+        Resource: '*'
+  - metadata:
+      name: lafleet-eks-sa-sqsshapeconsumer
+      labels: {aws-usage: "application"}
+    attachPolicy:
+      Version: "2012-10-17"
+      Statement:
+      - Effect: Allow
+        Action:
+        - "sqs:ReceiveMessage"
+        - "sqs:DeleteMessage"
+      - Effect: Allow
+        Action:
+        - "logs:CreateLogGroup"
+        - "logs:CreateLogStream"
+        - "logs:DescribeLogStreams"
+        - "logs:PutLogEvents"
+        Resource: '*'
+      - Effect: Allow
+        Action:
+        - "s3:ListAllMyBuckets"
+        - "s3:ListBucket"
+        - "s3:GetBucketLocation"
+        - "s3:GetObject"
+        - "s3:GetObjectVersion"
         Resource: '*'

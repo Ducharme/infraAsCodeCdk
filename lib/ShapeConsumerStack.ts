@@ -3,28 +3,28 @@ import { CiCd } from './CiCd';
 import { Construct } from 'constructs';
 
 
-export interface ConsumerStackProps extends StackProps {
+export interface ShapeConsumerStackProps extends StackProps {
   readonly repoCodeFolder : string;
 }
 
-export class ConsumerStack extends Stack {
+export class ShapeConsumerStack extends Stack {
 
-  constructor(scope: Construct, id: string, props: ConsumerStackProps) {
+  constructor(scope: Construct, id: string, props: ShapeConsumerStackProps) {
     super(scope, id);
 
-    const repoName = process.env.CONSUMER_REPO;
+    const repoName = process.env.SHAPE_CONSUMER_REPO;
     if (!repoName) {
-      throw new Error("Environement variable CONSUMER_REPO is not defined");
+      throw new Error("Environement variable SHAPE_CONSUMER_REPO is not defined");
     }
 
-    const repoDesc = process.env.CONSUMER_DESC;
+    const repoDesc = process.env.SHAPE_CONSUMER_DESC;
     if (!repoDesc) {
-      throw new Error("Environement variable CONSUMER_DESC is not defined");
+      throw new Error("Environement variable SHAPE_CONSUMER_DESC is not defined");
     }
 
-    const imageRepo = process.env.CONSUMER_IMAGE_REPO;
+    const imageRepo = process.env.SHAPE_CONSUMER_IMAGE_REPO;
     if (!imageRepo) {
-      throw new Error("Environement variable CONSUMER_IMAGE_REPO is not defined");
+      throw new Error("Environement variable SHAPE_CONSUMER_IMAGE_REPO is not defined");
     }
 
     const branchName = process.env.CODEBUILD_BRANCH_NAME;
@@ -47,6 +47,10 @@ export class ConsumerStack extends Stack {
       throw new Error("Environement variable S3_CODEPIPELINE_ARTIFACTS is not defined");
     }
 
+    const thingTopic = process.env.THING_TOPIC;
+    if (!thingTopic) {
+      throw new Error("Environement variable THING_TOPIC is not defined");
+    }
 
     var cicd = new CiCd(this, "CICD-" + repoName, {
         repoName: repoName,

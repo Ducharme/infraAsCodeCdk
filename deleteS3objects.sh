@@ -26,3 +26,4 @@ deleteObjectsFromBucket $S3_REACT_WEB
 deleteObjectsFromBucket $S3_OBJECT_STORE
 deleteObjectsFromBucket $S3_CODEBUILD_ARTIFACTS
 deleteObjectsFromBucket $S3_CODEPIPELINE_ARTIFACTS
+deleteObjectsFromBucket $S3_SHAPE_REPO

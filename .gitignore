@@ -9,6 +9,7 @@ kubectl
 get_helm.sh
 
 eks/redisearch-performance-analytics-py_service.yml
-eks/sqsconsumer-toredisearch-js_deployment.yml
+eks/sqsdeviceconsumer-toredisearch_deployment.yml
+eks/sqsshapeconsumer-toredisearch_deployment.yml
 eks/redisearch-query_service.yml
 eks/devices-slow_deployment.yml

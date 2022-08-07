@@ -128,7 +128,7 @@ License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
 License: MIT [link](https://www.npmjs.com/package/ioredis)
 
 
-## Repo sqsConsumerToRedisearchJs
+# Repo sqsDeviceConsumerToRedisearch
 
 ## nodejs
 
@@ -149,6 +149,33 @@ License: Apache-2.0 [link](https://www.npmjs.com/package/h3-js)
 ## aws-sdk/client-sqs
 
 License: Apache-2.0 [link](https://www.npmjs.com/package/@aws-sdk/client-sqs)
+
+
+# Repo sqsShapeConsumerToRedisearch
+
+## nodejs
+
+License: MIT [link](https://github.com/nodejs/node#license)
+
+## typescript
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/typescript)
+
+## redis
+
+License: MIT [link](https://www.npmjs.com/package/redis)
+
+## h3-js
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/h3-js)
+
+## aws-sdk/client-sqs
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/@aws-sdk/client-sqs)
+
+## aws-sdk/client-s3
+
+License: Apache-2.0 [link](https://www.npmjs.com/package/@aws-sdk/client-s3)
 
 
 # Repo redisPerformanceAnalyticsPy

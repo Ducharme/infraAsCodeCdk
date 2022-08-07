@@ -21,5 +21,6 @@ deleteImagesFromRepo(){
 
 deleteImagesFromRepo redisearch-performance-analytics-py
 deleteImagesFromRepo redisearch-query-client
-deleteImagesFromRepo sqsconsumer-toredisearch-js
+deleteImagesFromRepo sqsdeviceconsumer-toredisearch
+deleteImagesFromRepo sqsshapeconsumer-toredisearch
 deleteImagesFromRepo mock-iot-gps-device-awssdkv2

@@ -17,6 +17,7 @@ else
     . ./createLambdaLayer.sh || { echo "Creating lambda layer in $LAMBDA_LAYER_DIR failed, exiting" ; exit 1; }
 fi
 
+
 ### Setup GitHub repos
 
 if [ -d "$GITHUB_DIR" ]; then
@@ -26,6 +27,7 @@ else
     . ./downloadRepos.sh || { echo "Downloading github repositories to $GITHUB_DIR failed, exiting" ; exit 1; }
 fi
 
+
 ### Setup config script
 
 echo "Installing script-utils dependencies"
@@ -33,6 +35,7 @@ CUR_FOLDER=$PWD
 cd ./lib/script-utils
 npm install
 cd $CUR_FOLDER
+
 
 ### Get existing certificate from S3 if any
 
@@ -59,9 +62,13 @@ echo "Deploying LaFleet-DeviceStack"
 cdk deploy LaFleet-DeviceStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-DeviceStack failed, exiting" ; exit 1; }
 node ./lib/script-utils/main.js $DEVICE_REPO || { echo "Creating $DEVICE_REPO config failed, exiting" ; exit 1; }
 
-echo "Deploying LaFleet-ConsumerStack"
-cdk deploy LaFleet-ConsumerStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-ConsumerStack failed, exiting" ; exit 1; }
-node ./lib/script-utils/main.js $CONSUMER_REPO || { echo "Creating $CONSUMER_REPO config failed, exiting" ; exit 1; }
+echo "Deploying LaFleet-DeviceConsumerStack"
+cdk deploy LaFleet-DeviceConsumerStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-DeviceConsumerStack failed, exiting" ; exit 1; }
+node ./lib/script-utils/main.js $DEVICE_CONSUMER_REPO || { echo "Creating $DEVICE_CONSUMER_REPO config failed, exiting" ; exit 1; }
+
+echo "Deploying LaFleet-ShapeConsumerStack"
+cdk deploy LaFleet-ShapeConsumerStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-ShapeConsumerStack failed, exiting" ; exit 1; }
+node ./lib/script-utils/main.js $SHAPE_CONSUMER_REPO || { echo "Creating $SHAPE_CONSUMER_REPO config failed, exiting" ; exit 1; }
 
 echo "Deploying LaFleet-QueryStack"
 cdk deploy LaFleet-QueryStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-QueryStack failed, exiting" ; exit 1; }
@@ -71,5 +78,7 @@ echo "Deploying LaFleet-AnalyticsStack"
 cdk deploy LaFleet-AnalyticsStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-AnalyticsStack failed, exiting" ; exit 1; }
 node ./lib/script-utils/main.js $ANALYTICS_REPO || { echo "Creating $ANALYTICS_REPO config failed, exiting" ; exit 1; }
 
+#echo "Overriding CodeProject ArtifactName..."
+#. ./overrideArtifactName.sh
 
 echo "FINISHED!"

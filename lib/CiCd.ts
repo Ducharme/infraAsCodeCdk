@@ -8,6 +8,7 @@ import * as cps from 'aws-cdk-lib/pipelines';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
+import { CfnBackupPlan } from 'aws-cdk-lib/aws-backup';
 
 
 export interface CiCdProps {
@@ -103,11 +104,12 @@ export class CiCd extends Construct {
       buildSpec: cb.BuildSpec.fromSourceFilename("buildspec.yml"),
       artifacts: cb.Artifacts.s3({
         bucket: imported_codebuild_artifact_bucket,
-        //includeBuildId: true,
+        includeBuildId: true,
         packageZip: true,
         path: this.repoName,
-        name: this.repoName,
-        encryption: true
+        //name: this.repoName + ".zip",
+        identifier: "ArtifactToS3",
+        encryption: false
       }),
       logging: {
         cloudWatch: {
@@ -116,7 +118,7 @@ export class CiCd extends Construct {
       },
       timeout: Duration.minutes(15),
       queuedTimeout: Duration.minutes(30),
-      concurrentBuildLimit: 5,
+      concurrentBuildLimit: 5
     });
 
     if (this.ecrRepo !== undefined) {
@@ -126,11 +128,6 @@ export class CiCd extends Construct {
 
 
     const source = cps.CodePipelineSource.codeCommit(this.codeCommitRepo, props.sourceVersionBranchName);
-
-    const imported_codepipeline_artifact_bucket = s3.Bucket.fromBucketName(this,
-      'imported-codepipeline_artifact_bucket:: ' + this.repoName,
-      props.codepipeline_artifact_bucket_name
-    );
 
     const sourceOutput = new cp.Artifact();
     const sourceAction = new cpa.CodeCommitSourceAction({
@@ -150,6 +147,11 @@ export class CiCd extends Construct {
       variablesNamespace: "BuildVariables"
     });
 
+    const imported_codepipeline_artifact_bucket = s3.Bucket.fromBucketName(this,
+      'imported-codepipeline_artifact_bucket:: ' + this.repoName,
+      props.codepipeline_artifact_bucket_name
+    );
+    
     const deployAction = new cpa.S3DeployAction({
       actionName: 'CodeDeploy',
       bucket: imported_codepipeline_artifact_bucket,
@@ -159,14 +161,24 @@ export class CiCd extends Construct {
       variablesNamespace: "DeployVariables"
     });
 
+    // NOTE: When CodePipeline launches CodeBuild the artifacts will only be
+    // in imported_codepipeline_artifact_bucket. When the build is launched by 
+    // CodeBuild the ar tifacts will be in imported_codebuild_artifact_bucket.
+    // Naming of the files is different, for example
+    // CodeBuild -> lafleet-codebuild-artifacts-repo-<ACCOUNT_ID>/
+    //   sqsShapeConsumerToRedisearch/064d7c83-40cf-4168-9f3d-330e0dbdfb3b/cr_2022-08-06_23.zip
+    // Source CodePipeline -> lafleet-codepipeline-artifacts-repo-748293476463/
+    //   sqsShapeConsumerToRe/Artifact_O/MFdbQvN
+    // Output CodePipeline -> lafleet-codepipeline-artifacts-repo-748293476463/
+    //   sqsShapeConsumerToRe/Artifact_T/9U7N4GU
+    // Deploy stage will create a zip into codepipeline-artifacts s3 bucket
     this.codePipeline = new cp.Pipeline(scope, 'CodePipeline::' + this.repoName, {
       pipelineName: this.repoName,
       artifactBucket: imported_codepipeline_artifact_bucket,
-      //role: CODEPIPELINE_ARN
       stages: [
         {stageName: 'One-Source', actions: [sourceAction]},
         {stageName: 'Two-Build', actions: [buildAction]},
-        {stageName: 'Three-Copy', actions: [deployAction]},
+        {stageName: 'Three-Copy', actions: [deployAction]}
       ]
     });
 

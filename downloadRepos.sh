@@ -16,8 +16,10 @@ downloadRepo(){
   unzip $TMP_DIR/$REPO_NAME-$BRANCH_NAME.zip -d $TMP_DIR
 }
 
-downloadRepo $DEVICE_REPO
-downloadRepo $CONSUMER_REPO
-downloadRepo $REACT_REPO
-downloadRepo $QUERY_REPO
-downloadRepo $ANALYTICS_REPO
+
+#downloadRepo $DEVICE_REPO
+#downloadRepo $DEVICE_CONSUMER_REPO
+#downloadRepo $SHAPE_CONSUMER_REPO
+#downloadRepo $REACT_REPO
+#downloadRepo $QUERY_REPO
+#downloadRepo $ANALYTICS_REPO

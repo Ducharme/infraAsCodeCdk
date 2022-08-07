@@ -236,11 +236,12 @@ sh ./main_create_k8s.sh
 
 Approximate timings:
 1. eksctl-lafleet-cluster-cluster (15 minutes)
-2. eksctl-lafleet-cluster-addon-iamserviceaccount-default-lafleet-eks-sa-sqsconsumer (2 minutes)
-3. eksctl-lafleet-cluster-addon-iamserviceaccount-kube-system-aws-node (2 minutes in // with 2.)
-4. eksctl-lafleet-cluster-nodegroup-ng-standard-x64 (4 minutes)
-5. eksctl-lafleet-cluster-nodegroup-ng-compute-x64 (4 minutes in // with 4.)
-6. cdk deploy LaFleet-WebsiteStack
+2. eksctl-lafleet-cluster-addon-iamserviceaccount-default-lafleet-eks-sa-sqsdeviceconsumer (2 minutes)
+3. eksctl-lafleet-cluster-addon-iamserviceaccount-default-lafleet-eks-sa-sqsshapeconsumer (2 minutes)
+4. eksctl-lafleet-cluster-addon-iamserviceaccount-kube-system-aws-node (2 minutes in // with 2.)
+5. eksctl-lafleet-cluster-nodegroup-ng-standard-x64 (4 minutes)
+6. eksctl-lafleet-cluster-nodegroup-ng-compute-x64 (4 minutes in // with 4.)
+7. cdk deploy LaFleet-WebsiteStack
 
 
 ## Fourth step: Deploy pods on EKS cluster (2 minutes)
@@ -341,7 +342,7 @@ curl -s --raw --show-error --verbose -L -X POST -H "Content-Type: application/js
 
 ## Creating a pod with redis on the cluster
 
-Note: Use <Shift>+R to get the prompt to show with redis client otherwise the terminal might not display it
+Note: Use \<Shift\>+R to get the prompt to show with redis client otherwise the terminal might not display it
 Note: Add arguments --raw --show-error --verbose for more details
 
 ```
@@ -353,14 +354,14 @@ Common commands
 ```
 $ KEYS *
 $ FLUSHALL
-$ HGETALL DEVLOC:test-123456:topic_1
-$ XRANGE STREAMDEV:test-123456:topic_1 - +
+$ HGETALL DEVLOC:test-123456:lafleet/devices/location/+/streaming
+$ XRANGE STREAMDEV:test-123456:lafleet/devices/location/+/streaming - +
 ```
 
 Using INDEX
 ```
-FT.AGGREGATE topic-h3-idx "@topic:topic_1 @h3r0:{802bfffffffffff | 802bffffffffffw }" GROUPBY 1 @h3r0 REDUCE COUNT 0 AS num_devices
-FT.SEARCH topic-lnglat-idx "@topic:topic_1 @lnglat:[-73 45 100 km]" NOCONTENT
+FT.AGGREGATE topic-h3-idx "@topic:lafleet/devices/location/+/streaming @h3r0:{802bfffffffffff | 802bffffffffffw }" GROUPBY 1 @h3r0 REDUCE COUNT 0 AS num_devices
+FT.SEARCH topic-lnglat-idx "@topic:lafleet/devices/location/+/streaming @lnglat:[-73 45 100 km]" NOCONTENT
 ```
 
 ## To play locally with redisearch
@@ -369,11 +370,17 @@ Creating the two INDEX
 ```
 sudo docker run --name redisearch-cli --rm -it -d -p 6379:6379 redislabs/redisearch:latest
 
-INDEX_H3="FT.CREATE topic-h3-idx ON HASH PREFIX 1 DEVLOC: SCHEMA topic TEXT h3r0 TAG h3r1 TAG h3r2 TAG h3r3 TAG h3r4 TAG h3r5 TAG h3r6 TAG h3r7 TAG h3r8 TAG h3r9 TAG h3r10 TAG h3r11 TAG h3r12 TAG h3r13 TAG h3r14 TAG h3r15 TAG dts NUMERIC batt NUMERIC fv TEXT"
-INDEX_LOC="FT.CREATE topic-loc-idx ON HASH PREFIX 1 DEVLOC: SCHEMA topic TEXT loc GEO dts NUMERIC batt NUMERIC fv TEXT"
+DEVICE_INDEX_H3="FT.CREATE topic-h3-idx ON HASH PREFIX 1 DEVLOC: SCHEMA topic TEXT h3r0 TAG h3r1 TAG h3r2 TAG h3r3 TAG h3r4 TAG h3r5 TAG h3r6 TAG h3r7 TAG h3r8 TAG h3r9 TAG h3r10 TAG h3r11 TAG h3r12 TAG h3r13 TAG h3r14 TAG h3r15 TAG dts NUMERIC batt NUMERIC fv TEXT"
+DEVICE_INDEX_LOC="FT.CREATE topic-lnglat-idx ON HASH PREFIX 1 DEVLOC: SCHEMA topic TEXT lnglat GEO dts NUMERIC batt NUMERIC fv TEXT"
+SHAPE_INDEX_TYPE="FT.CREATE shape-type-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.type AS type TEXT"
+SHAPE_INDEX_LOC_FILTER="FT.CREATE shape-loc-filter-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.status AS status TEXT $.type AS type TEXT $.filter.h3r0.* AS f_h3r0 TAG $.filter.h3r1.* AS f_h3r1 TAG $.filter.h3r2.* AS f_h3r2 TAG $.filter.h3r3.* AS f_h3r3 TAG $.filter.h3r4.* AS f_h3r4 TAG $.filter.h3r5.* AS f_h3r5 TAG $.filter.h3r6.* AS f_h3r6 TAG $.filter.h3r7.* AS f_h3r7 TAG $.filter.h3r8.* AS f_h3r8 TAG $.filter.h3r9.* AS f_h3r9 TAG $.filter.h3r10.* AS f_h3r10 TAG $.filter.h3r11.* AS f_h3r11 TAG $.filter.h3r12.* AS f_h3r12 TAG $.filter.h3r13.* AS f_h3r13 TAG $.filter.h3r14.* AS f_h3r14 TAG $.filter.h3r15.* AS f_h3r15 TAG"
+SHAPE_INDEX_LOC_MATCH="FT.CREATE shape-loc-match-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.status AS status TEXT $.type AS type TEXT $.shape.h3r0.* AS s_h3r0 TAG $.shape.h3r1.* AS s_h3r1 TAG $.shape.h3r2.* AS s_h3r2 TAG $.shape.h3r3.* AS s_h3r3 TAG $.shape.h3r4.* AS s_h3r4 TAG $.shape.h3r5.* AS s_h3r5 TAG $.shape.h3r6.* AS s_h3r6 TAG $.shape.h3r7.* AS s_h3r7 TAG $.shape.h3r8.* AS s_h3r8 TAG $.shape.h3r9.* AS s_h3r9 TAG $.shape.h3r10.* AS s_h3r10 TAG $.shape.h3r11.* AS s_h3r11 TAG $.shape.h3r12.* AS s_h3r12 TAG $.shape.h3r13.* AS s_h3r13 TAG $.shape.h3r14.* AS s_h3r14 TAG $.shape.h3r15.* AS s_h3r15 TAG"
 
-echo "$INDEX_H3" | redis-cli 
-echo "$INDEX_LOC" | redis-cli
+echo "$DEVICE_INDEX_H3" | redis-cli 
+echo "$DEVICE_INDEX_LOC" | redis-cli
+echo "$SHAPE_INDEX_TYPE" | redis-cli
+echo "$SHAPE_INDEX_LOC_FILTER" | redis-cli
+echo "$SHAPE_INDEX_LOC_MATCH" | redis-cli
 
 FT._LIST
 ```

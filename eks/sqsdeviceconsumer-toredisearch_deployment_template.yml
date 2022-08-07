@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lafleet-consumers
+  name: lafleet-device-consumers
   namespace: default
   labels:
-    app: consumers
+    app: device-consumers
     project: lafleet
 spec:
   selector:
     matchLabels:
-      app: consumers-app
-  replicas: 15
+      app: device-consumers-app
+  replicas: 3
   template:
     metadata:
       labels:
-        app: consumers-app
+        app: device-consumers-app
     spec:
-      serviceAccountName: lafleet-eks-sa-sqsconsumer
+      serviceAccountName: lafleet-eks-sa-sqsdeviceconsumer
       automountServiceAccountToken: false
       containers:
       - name: IMAGE_REPO_NAME_VALUE
@@ -29,6 +29,8 @@ spec:
           value: "AWS_REGION_VALUE"
         - name: SQS_QUEUE_URL
           value: "SQS_QUEUE_URL_VALUE"
+        - name: TOPIC
+          value: "TOPIC_VALUE"
         resources:
           limits:
             memory: "60Mi"
