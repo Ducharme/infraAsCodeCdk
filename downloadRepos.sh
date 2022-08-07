@@ -17,9 +17,9 @@ downloadRepo(){
 }
 
 
-#downloadRepo $DEVICE_REPO
-#downloadRepo $DEVICE_CONSUMER_REPO
-#downloadRepo $SHAPE_CONSUMER_REPO
-#downloadRepo $REACT_REPO
-#downloadRepo $QUERY_REPO
-#downloadRepo $ANALYTICS_REPO
+downloadRepo $DEVICE_REPO
+downloadRepo $DEVICE_CONSUMER_REPO
+downloadRepo $SHAPE_CONSUMER_REPO
+downloadRepo $REACT_REPO
+downloadRepo $QUERY_REPO
+downloadRepo $ANALYTICS_REPO
