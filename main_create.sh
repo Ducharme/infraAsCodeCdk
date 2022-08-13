@@ -57,6 +57,7 @@ fi
 
 echo "Deploying LaFleet-CommonStack"
 cdk deploy LaFleet-CommonStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-CommonStack failed, exiting" ; exit 1; }
+node ./lib/script-utils/main.js "addGetObjectVersionToShapeS3Policy" || { echo "Running addGetObjectVersionToShapeS3Policy failed, exiting" ; exit 1; }
 
 echo "Deploying LaFleet-DeviceStack"
 cdk deploy LaFleet-DeviceStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-DeviceStack failed, exiting" ; exit 1; }

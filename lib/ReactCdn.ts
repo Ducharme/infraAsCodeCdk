@@ -111,16 +111,16 @@ export class ReactCdn extends Construct {
     });
 
 
-    const cdnDistIdOutput = new CfnOutput(this, "CloudFrontDistributionId", {
+    const cdnDistIdOutput = new CfnOutput(this, "ReactCloudFrontDistributionId", {
         value: this.distribution.distributionId,
         description: '',
-        exportName: 'CloudFront-DistributionId',
+        exportName: 'React-CloudFront-DistributionId',
     });
 
-    const cdnDistDomainNameOutput = new CfnOutput(this, "CloudFrontDistributionDomainName", {
+    const cdnDistDomainNameOutput = new CfnOutput(this, "ReactCloudFrontDistributionDomainName", {
         value: this.distribution.distributionDomainName,
         description: '',
-        exportName: 'CloudFront-DomainName',
+        exportName: 'React-CloudFront-DomainName',
     });
   }
 }

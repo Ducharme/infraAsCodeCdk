@@ -121,7 +121,13 @@ export class DeviceStack extends Stack {
             ],
             Resource: [
               `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:client/${clientFilter}`
-            ]
+            ],
+            // TODO: Test less permissive way to connect iot devices
+            // https://docs.aws.amazon.com/iot/latest/developerguide/audit-chk-iot-policy-permissive.html
+            //"Condition": {
+            //  "Bool": { "iot:Connection.Thing.IsAttached": "true" },
+            //  "StringEquals": {"${iot:Connection.Thing.ThingName}": `${thingName}`}
+            //}
           }
         ]
       },

@@ -329,7 +329,7 @@ curl -s -X DELETE -H "Content-Type: application/json" http://analytics-service/d
 
 #### For redisearch service
 
-Note: External service domain is https://&lt;cloudfront-distribution-domaine-name&gt; which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
+Note: External service domain is https://&lt;cloudfront-distribution-domain-name&gt; which looks like d12acbc34def5g0.cloudfront.net (not to be confused with CloudFront Distribution ID with capital alpha-numeric)
 
 ```
 curl -s --raw --show-error --verbose -L -X GET http://query-service
@@ -354,8 +354,8 @@ Common commands
 ```
 $ KEYS *
 $ FLUSHALL
-$ HGETALL DEVLOC:test-123456:lafleet/devices/location/+/streaming
-$ XRANGE STREAMDEV:test-123456:lafleet/devices/location/+/streaming - +
+$ HGETALL DEVLOC:lafleet/devices/location/test-123456/streaming
+$ XRANGE STREAMDEV:lafleet/devices/location/test-123456/streaming - +
 ```
 
 Using INDEX

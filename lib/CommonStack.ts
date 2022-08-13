@@ -4,6 +4,7 @@ import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { SqsQueue } from './SqsQueue';
+import { ShapeCdn } from './ShapeCdn';
 
 
 export interface CommonStackProps extends StackProps { };
@@ -42,7 +43,7 @@ export class CommonStack extends Stack {
     if (!shape_repo_bucket_name) {
       throw new Error("Environement variable S3_SHAPE_REPO is not defined");
     }
-    
+
     
     /********** S3 BUCKET **********/
 
@@ -91,6 +92,15 @@ export class CommonStack extends Stack {
     shape_repo_bucket.addEventNotification(s3.EventType.OBJECT_CREATED,
       new s3n.SqsDestination(this.shapeSqSQueue.sqsQueue),
       {prefix: 'latest/', suffix: '.json'});
+
+
+    /********** CLOUDFRONT **********/
+      
+    var shapeCdn = new ShapeCdn(this, "ShapeCdn", {
+      shape_web_bucket_name: shape_repo_bucket_name,
+      shape_web_bucket: shape_repo_bucket
+    });
+
 
   }
 }

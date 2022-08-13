@@ -1,6 +1,6 @@
 {
     "name": "lafleet-iac-js",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "LaFleet - Config generation in JavaScript",
     "homepage": "https://github.com/Ducharme/",
     "keywords": [
@@ -16,8 +16,8 @@
         "start": "node main.js"
     },
     "dependencies": {
-        "@aws-sdk/client-cloudformation": "^3.100.0",
-        "@aws-sdk/client-s3": "^3.100.0"
+        "@aws-sdk/client-cloudformation": "^3.145.0",
+        "@aws-sdk/client-s3": "^3.145.0"
     },
     "devDependencies": {
         "@types/node": "^14.14.31"
