@@ -46,10 +46,16 @@ if [ ! -z "$QS_STACK" ]; then
     cdk destroy LaFleet-QueryStack $CDK_FORCE || { echo "Destroying LaFleet-QueryStack failed, exiting" ; exit 1; }
 fi
 
-CS_STACK=$(echo "$STACKS" | grep "LaFleet-ConsumerStack")
+CS_STACK=$(echo "$STACKS" | grep "LaFleet-ShapeConsumerStack")
 if [ ! -z "$CS_STACK" ]; then
-    echo "Destroying LaFleet-ConsumerStack"
-    cdk destroy LaFleet-ConsumerStack $CDK_FORCE || { echo "Destroying LaFleet-ConsumerStack failed, exiting" ; exit 1; }
+    echo "Destroying LaFleet-ShapeConsumerStack"
+    cdk destroy LaFleet-ShapeConsumerStack $CDK_FORCE || { echo "Destroying LaFleet-ShapeConsumerStack failed, exiting" ; exit 1; }
+fi
+
+CS_STACK=$(echo "$STACKS" | grep "LaFleet-DeviceConsumerStack")
+if [ ! -z "$CS_STACK" ]; then
+    echo "Destroying LaFleet-DeviceConsumerStack"
+    cdk destroy LaFleet-DeviceConsumerStack $CDK_FORCE || { echo "Destroying LaFleet-DeviceConsumerStack failed, exiting" ; exit 1; }
 fi
 
 DS_STACK=$(echo "$STACKS" | grep "LaFleet-DeviceStack")

@@ -2,11 +2,9 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: lafleet-cluster
-  region: ap-southeast-1
-  version: "1.21"
-
-availabilityZones: ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"]
+  name: PROJECT_NAME-cluster
+  region: AWS_REGION_VALUE
+  version: "1.23"
 
 vpc:
   nat:
@@ -17,7 +15,7 @@ vpc:
 
 managedNodeGroups:
 - name: ng-compute-x64
-  instanceType: c6i.large # 2 vCPU & 4 GiB Memory (29 pods)
+  instanceType: COMPUTE_INSTANCE_TYPE
   instancePrefix: lf-c6i
   minSize: 0
   desiredCapacity: 1
@@ -26,6 +24,7 @@ managedNodeGroups:
   volumeType: gp3
   maxPodsPerNode: 30
   privateNetworking: true
+  spot: USE_SPOT_INSTANCES
   labels:
     nodegroup-type: backend-compute
   taints:
@@ -37,7 +36,7 @@ managedNodeGroups:
   updateConfig:
     maxUnavailable: 1
 - name: ng-standard-x64
-  instanceType: t3.medium # 2 vCPU & 4 GiB Memory (17 pods)
+  instanceType: STANDARD_INSTANCE_TYPE
   instancePrefix: lf-t3
   minSize: 0
   desiredCapacity: 2
@@ -46,6 +45,7 @@ managedNodeGroups:
   volumeType: gp3
   maxPodsPerNode: 30
   privateNetworking: true
+  spot: USE_SPOT_INSTANCES
   labels:
     nodegroup-type: backend-standard
   tags:
@@ -61,7 +61,7 @@ iam:
   withOIDC: true
   serviceAccounts:
   - metadata:
-      name: lafleet-eks-sa-sqsdeviceconsumer
+      name: PROJECT_NAME-eks-sa-sqsdeviceconsumer
       labels: {aws-usage: "application"}
     attachPolicy:
       Version: "2012-10-17"
@@ -70,7 +70,7 @@ iam:
         Action:
         - "sqs:ReceiveMessage"
         - "sqs:DeleteMessage"
-        Resource: '*'
+        Resource: 'RES_DEVICE_SQS_QUEUE'
       - Effect: Allow
         Action:
         - "logs:CreateLogGroup"
@@ -79,7 +79,7 @@ iam:
         - "logs:PutLogEvents"
         Resource: '*'
   - metadata:
-      name: lafleet-eks-sa-sqsshapeconsumer
+      name: PROJECT_NAME-eks-sa-sqsshapeconsumer
       labels: {aws-usage: "application"}
     attachPolicy:
       Version: "2012-10-17"
@@ -88,6 +88,7 @@ iam:
         Action:
         - "sqs:ReceiveMessage"
         - "sqs:DeleteMessage"
+        Resource: 'RES_SHAPE_SQS_QUEUE'
       - Effect: Allow
         Action:
         - "logs:CreateLogGroup"
@@ -97,9 +98,6 @@ iam:
         Resource: '*'
       - Effect: Allow
         Action:
-        - "s3:ListAllMyBuckets"
-        - "s3:ListBucket"
-        - "s3:GetBucketLocation"
         - "s3:GetObject"
         - "s3:GetObjectVersion"
-        Resource: '*'
+        Resource: 'RES_S3_SHAPE_REPO'

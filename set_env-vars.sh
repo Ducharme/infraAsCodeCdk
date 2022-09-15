@@ -16,25 +16,26 @@ export THING_TOPIC=$PROJECT_NAME/devices/location/+/streaming
 
 LAMBDA_LAYER_DIR=./tmp/lambda-layers
 GITHUB_DIR=./tmp/github
+CODECOMMIT_DIR=./tmp/codecommit
 CONFIG_DIR=./tmp/config
 
 export DEVICE_REPO=mockIotGpsDeviceAwsSdkV2
-export DEVICE_DESC="LaFleet - Emulated IoT GPS Device based on aws-iot-device-sdk-v2"
+export DEVICE_DESC="$PROJECT_NAME - Emulated IoT GPS Device based on aws-iot-device-sdk-v2"
 export DEVICE_IMAGE_REPO="mock-iot-gps-device-awssdkv2"
 export DEVICE_CONSUMER_REPO=sqsDeviceConsumerToRedisearch
-export DEVICE_CONSUMER_DESC="LaFleet - SQS Device Consumer writing to Redisearch in TypeScript"
+export DEVICE_CONSUMER_DESC="$PROJECT_NAME - SQS Device Consumer writing to Redisearch in TypeScript"
 export DEVICE_CONSUMER_IMAGE_REPO="sqsdeviceconsumer-toredisearch"
 export SHAPE_CONSUMER_REPO=sqsShapeConsumerToRedisearch
-export SHAPE_CONSUMER_DESC="LaFleet - SQS Shape Consumer writing to Redisearch in TypeScript"
+export SHAPE_CONSUMER_DESC="$PROJECT_NAME - SQS Shape Consumer writing to Redisearch in TypeScript"
 export SHAPE_CONSUMER_IMAGE_REPO="sqsshapeconsumer-toredisearch"
 export QUERY_REPO=redisearchQueryClient
-export QUERY_DESC="LaFleet - Service to query Redisearch in TypeScript"
+export QUERY_DESC="$PROJECT_NAME - Service to query Redisearch in TypeScript"
 export QUERY_IMAGE_REPO="redisearch-query-client"
 export ANALYTICS_REPO=redisPerformanceAnalyticsPy
-export ANALYTICS_DESC="LaFleet - Redis performance analytics in python3"
+export ANALYTICS_DESC="$PROJECT_NAME - Redis performance analytics in python3"
 export ANALYTICS_IMAGE_REPO="redisearch-performance-analytics-py"
 export REACT_REPO=reactFrontend
-export REACT_DESC="LaFleet - React Frontend in TypeScript"
+export REACT_DESC="$PROJECT_NAME - React Frontend in TypeScript"
 export CODEBUILD_BRANCH_NAME="main";
 
 FORCE_UPPER=$(echo $FORCE | tr 'a-z' 'A-Z')

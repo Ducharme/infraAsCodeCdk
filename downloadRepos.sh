@@ -1,19 +1,24 @@
 #!/bin/sh
 
-TMP_DIR=./tmp/github
 GIT_ACC=https://github.com/Ducharme
-BRANCH_NAME=main
 GIT_PATH=archive/refs/heads
+BRANCH_NAME=main
 
 
-if [ ! -d "$TMP_DIR" ]; then
-  mkdir -p $TMP_DIR
+if [ ! -d "$GITHUB_DIR" ]; then
+  mkdir -p $GITHUB_DIR
 fi
 
 downloadRepo(){
   REPO_NAME=$1
-  curl -L $GIT_ACC/$REPO_NAME/$GIT_PATH/$BRANCH_NAME.zip --output $TMP_DIR/$REPO_NAME-$BRANCH_NAME.zip
-  unzip $TMP_DIR/$REPO_NAME-$BRANCH_NAME.zip -d $TMP_DIR
+
+  GITHUB_REPO_DIR=$GITHUB_DIR/$REPO_NAME-$BRANCH_NAME
+  if [ -d "$GITHUB_REPO_DIR" ]; then
+    rm -r "$GITHUB_REPO_DIR"
+  fi
+  
+  curl -L $GIT_ACC/$REPO_NAME/$GIT_PATH/$BRANCH_NAME.zip --output $GITHUB_REPO_DIR.zip
+  unzip $GITHUB_REPO_DIR.zip -d $GITHUB_DIR
 }
 
 

@@ -14,3 +14,4 @@ eks/sqsshapeconsumer-toredisearch_deployment.yml
 eks/redisearch-query_service.yml
 eks/devices-slow_deployment.yml
 eks/redisearch_service_*
+eksctl/lafleet.yaml
