@@ -5,8 +5,8 @@
     "scripts": {
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "3.81.0",
-        "@aws-sdk/client-iot": "3.81.0",
-        "@aws-sdk/client-sts": "3.81.0"
+        "@aws-sdk/client-s3": "3.171.0",
+        "@aws-sdk/client-iot": "3.171.0",
+        "@aws-sdk/client-sts": "3.171.0"
     }
 }

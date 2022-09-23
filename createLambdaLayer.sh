@@ -4,7 +4,7 @@ LIB_DIR=./lib/lambda-layers
 TMP_DIR=./tmp/lambda-layers
 PKG_FILE=package.json
 LCK_FILE=package-lock.json
-ZIP_FILE=aws-sdk-client-iot-layer.zip
+ZIP_FILE=aws-sdk-client-layer.zip
 
 if [ ! -d "$TMP_DIR" ]; then
   mkdir -p $TMP_DIR

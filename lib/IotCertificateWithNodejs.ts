@@ -64,11 +64,11 @@ export class IotCertificateWithNodejs extends Construct {
       resources: s3res
     }));
 
-    var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayerNpmInstall", {
+    var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayerIotCertificate", {
       compatibleRuntimes: [
-        lambda.Runtime.NODEJS_14_X,
+        lambda.Runtime.NODEJS_16_X,
       ],
-      code: lambda.Code.fromAsset(`${__dirname}/../tmp/lambda-layers/aws-sdk-client-iot-layer.zip`)
+      code: lambda.Code.fromAsset(`${__dirname}/../tmp/lambda-layers/aws-sdk-client-layer.zip`)
     });
 
     // https://github.com/devops-at-home/cdk-iot-core-certificates
@@ -77,7 +77,7 @@ export class IotCertificateWithNodejs extends Construct {
     const lambdaForCerts = new njs.NodejsFunction(this, 'Lambda::Certificates::NodejsFunction', {
       memorySize: 128,
       timeout: Duration.seconds(15),
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_16_X,
       entry: `${__dirname}/lambda-handlers/certificates/index.ts`,
       handler: 'handler',
       bundling: {
