@@ -1,4 +1,4 @@
-import {  Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import {  CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -141,17 +141,20 @@ export class ShapeStack extends Stack {
         const uploadShapeIntegration = new HttpLambdaIntegration('UploadShapeIntegration', uploadShapeFunction);
         const shapeSubmittedIntegration = new HttpLambdaIntegration('ShapeSubmittedIntegration', shapeSubmittedFunction);
 
-        httpApi.addRoutes({
-            path: '/upload-shape',
+        const uploadShapePath = '/upload-shape';
+        var uploadRoute = httpApi.addRoutes({
+            path: uploadShapePath,
             methods: [ HttpMethod.GET ],
             integration: uploadShapeIntegration,
         });
 
         httpApi.addRoutes({
-            path: '/upload-shape',
+            path: uploadShapePath,
             methods: [ HttpMethod.POST ],
             integration: shapeSubmittedIntegration,
         });
+
+        new CfnOutput(this, 'UploadShapeLink', { value: uploadRoute[0].httpApi.apiEndpoint + uploadShapePath });
 
     }
 }
