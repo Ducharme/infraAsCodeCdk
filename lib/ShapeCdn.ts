@@ -4,9 +4,11 @@ import * as cdn from 'aws-cdk-lib/aws-cloudfront';
 import * as cfo from 'aws-cdk-lib/aws-cloudfront-origins';
 import { Construct } from 'constructs';
 
+
 export interface ShapeCdnProps {
   readonly shape_web_bucket_name: string,
   readonly shape_web_bucket: s3.IBucket;
+  readonly apiGateway_endpoint: string
 }
 
 export class ShapeCdn extends Construct {
@@ -36,7 +38,7 @@ export class ShapeCdn extends Construct {
             compress: false
         },
         comment: "LaFleet Shape Cache",
-        httpVersion: cdn.HttpVersion.HTTP2,
+        httpVersion: cdn.HttpVersion.HTTP2_AND_3,
         minimumProtocolVersion: cdn.SecurityPolicyProtocol.TLS_V1_2_2021,
     });
 
@@ -51,5 +53,25 @@ export class ShapeCdn extends Construct {
         description: '',
         exportName: 'Shape-CloudFront-DomainName',
     });
+
+    // TODO: Awaiting answer on slack https://cdk-dev.slack.com/archives/C018XT6REKT/p1665259244883079
+    // https://docs.aws.amazon.com/solutions/latest/constructs/aws-cloudfront-apigateway.html
+    // https://docs.aws.amazon.com/solutions/latest/constructs/aws-cloudfront-apigateway-lambda.html
+    // https://github.com/awslabs/aws-solutions-constructs/tree/main/source/patterns/@aws-solutions-constructs/aws-cloudfront-apigateway-lambda
+    // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront-readme.html
+    // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins-readme.html
+
+    /*var ep = props.apiGateway_endpoint.replace("http://", "").replace("https://", "");
+    var index = ep.indexOf("/");
+    var path = "";
+    if (index > 0) {
+      path = ep.substring(index);
+      ep = ep.replace(path, "");
+    }
+
+    this.distribution.addBehavior('', new HttpOrigin(ep, {originPath: path}), {
+      allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    });*/
   }
 }

@@ -38,7 +38,7 @@ export class ReactCdn extends Construct {
         },
         comment: "LaFleet React Website",
         defaultRootObject: "index.html",
-        httpVersion: cdn.HttpVersion.HTTP2,
+        httpVersion: cdn.HttpVersion.HTTP2_AND_3,
         minimumProtocolVersion: cdn.SecurityPolicyProtocol.TLS_V1_2_2021,
         errorResponses: [
             {

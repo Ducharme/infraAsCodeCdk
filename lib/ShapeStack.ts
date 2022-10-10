@@ -4,7 +4,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { HttpApi, HttpMethod } from '@aws-cdk/aws-apigatewayv2-alpha';
-import { HttpUrlIntegration, HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
+import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
 import { Construct } from 'constructs';
 import { SqsQueue } from './SqsQueue';
 import { ShapeCdn } from './ShapeCdn';
@@ -56,13 +56,6 @@ export class ShapeStack extends Stack {
             new s3n.SqsDestination(this.shapeSqSQueue.sqsQueue),
             {prefix: 'latest/', suffix: '.json'});
 
-
-        /********** CLOUDFRONT **********/
-      
-        var shapeCdn = new ShapeCdn(this, "ShapeCdn", {
-            shape_web_bucket_name: shape_repo_bucket_name,
-            shape_web_bucket: shape_repo_bucket
-        });
 
         /********** LAMBDA **********/
 
@@ -135,6 +128,8 @@ export class ShapeStack extends Stack {
             timeout: Duration.seconds(5), // Below 2 seconds
         });
 
+        /********** API GATEWAY **********/
+
         const httpApi = new HttpApi(this, 'ShapesHttpApi');
         // TODO: Set timeout to 3 seconds on integrations instead of 30 seconds
         // The number of milliseconds that API Gateway should wait for a response from the integration before timing out.
@@ -154,7 +149,16 @@ export class ShapeStack extends Stack {
             integration: shapeSubmittedIntegration,
         });
 
+        // Pattern is https://<random>.execute-api.<region>.amazonaws.com/upload-shape
         new CfnOutput(this, 'UploadShapeLink', { value: uploadRoute[0].httpApi.apiEndpoint + uploadShapePath });
 
+
+        /********** CLOUDFRONT **********/
+
+        var shapeCdn = new ShapeCdn(this, "ShapeCdn", {
+            shape_web_bucket_name: shape_repo_bucket_name,
+            shape_web_bucket: shape_repo_bucket,
+            apiGateway_endpoint: httpApi.apiEndpoint
+        });
     }
 }
