@@ -1,12 +1,9 @@
-import { Aws, Stack, StackProps, CfnOutput, Fn, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, Stack, StackProps } from 'aws-cdk-lib';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as iot from 'aws-cdk-lib/aws-iot';
-import * as iam from 'aws-cdk-lib/aws-iam';
-import * as logs from 'aws-cdk-lib/aws-logs';
-import * as cr from 'aws-cdk-lib/custom-resources';
-import { IotCertificateWithNodejs } from './IotCertificateWithNodejs';
 import { CiCd } from './CiCd';
 import { Construct } from 'constructs';
+import { IotThing } from './IotThing';
 
 
 export interface DeviceStackProps extends StackProps {
@@ -47,9 +44,19 @@ export class DeviceStack extends Stack {
       throw new Error("Environement variable CODEBUILD_BRANCH_NAME is not defined");
     }
 
-    const thingTopic = process.env.THING_TOPIC;
-    if (!thingTopic) {
-      throw new Error("Environement variable THING_TOPIC is not defined");
+    const streamingLocationTopic = process.env.STREAMING_LOCATION_TOPIC;
+    if (!streamingLocationTopic) {
+      throw new Error("Environement variable STREAMING_LOCATION_TOPIC is not defined");
+    }
+
+    const streamIdRequestTopic = process.env.STREAMID_REQUEST_TOPIC;
+    if (!streamIdRequestTopic) {
+      throw new Error("Environement variable STREAMID_REQUEST_TOPIC is not defined");
+    }
+
+    const streamIdReplyTopic = process.env.STREAMID_REPLY_TOPIC;
+    if (!streamIdReplyTopic) {
+      throw new Error("Environement variable STREAMID_REPLY_TOPIC is not defined");
     }
 
     const object_store_bucket_name = process.env.S3_OBJECT_STORE;
@@ -69,141 +76,72 @@ export class DeviceStack extends Stack {
 
 
     const thingName = repoName;
-    const cwIotDeviceLogsLogGroup : string = "/" + projectName + "/iot/" + projectName + "-" + thingName + "-logs";
-    const cwIotDeviceErrorsLogGroup : string = "/" + projectName + "/iot/" + projectName + "-" + thingName + "-error-logs";
+    const policyName : string = thingName + "-policy";
+    const thingPolicyName : string = projectName + "-" + policyName;
 
-    const devicePolicyName : string = "device-policy";
-    const thingPolicyName : string = projectName + "-" + devicePolicyName;
-
-    const iotCertificateWithNodejs = new IotCertificateWithNodejs(this, 'IotCertificateWithNodejs', {
-      object_store_bucket_name: object_store_bucket_name
-    });
-
-    var certificateId = iotCertificateWithNodejs.certificateId;
-    var certificateArn = iotCertificateWithNodejs.certificateArn;
-
-    if (certificateId === undefined || certificateArn === undefined) {
-      certificateId = Fn.importValue('Iot-CertificateId');
-      certificateArn = Fn.importValue('Iot-CertificateArn');
-    }
-
-    // Need samples for AWS IoT https://github.com/aws-samples/aws-cdk-examples/issues/655
-    // How to create IOT thing with certificate and policy https://github.com/aws/aws-cdk/issues/19303
-    const cfnThing = new iot.CfnThing(this, 'Thing-' + thingName, {
-      thingName: thingName,
-    });
-    cfnThing.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-    const topicFilter = thingTopic.replace("+", "${iot:ClientId}");
+    const streamingLocationTopicFilter = streamingLocationTopic.replace("+", "${iot:ClientId}");
+    const streamIdRequestTopicFilter = streamIdRequestTopic.replace("+", "${iot:ClientId}");
+    const streamIdReplyTopicFilter = streamIdReplyTopic.replace("+", "${iot:ClientId}");
     const clientFilter = "${iot:ClientId}";
     // NOTE: When not set properly the connect might success but first message afterward will disconnect.
     // -> Error: libaws-c-mqtt: AWS_ERROR_MQTT_UNEXPECTED_HANGUP, The connection was closed unexpectedly.
-    const cfnPolicy = new iot.CfnPolicy(this, 'Thing-' + devicePolicyName, {
+    const cfnPolicy = new iot.CfnPolicy(this, 'Thing-' + policyName, {
       policyName: thingPolicyName,
       policyDocument: {
         Version: "2012-10-17",
         Statement: [
           {
             Effect: "Allow",
-            Action: [
-              "iot:Publish",
-              "iot:Receive",
-              "iot:Subscribe"
-            ],
-            Resource: [
-              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${topicFilter}`
-            ]
+            Action: [ "iot:Subscribe" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topicfilter/${streamingLocationTopicFilter}`]
           },
           {
             Effect: "Allow",
-            Action: [
-              "iot:Connect"
-            ],
-            Resource: [
-              `arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:client/${clientFilter}`
-            ],
+            Action: [ "iot:Publish", "iot:Receive" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${streamingLocationTopicFilter}`]
+          },
+          {
+            Effect: "Allow",
+            Action: [ "iot:Connect" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:client/${clientFilter}`],
             // TODO: Test less permissive way to connect iot devices
             // https://docs.aws.amazon.com/iot/latest/developerguide/audit-chk-iot-policy-permissive.html
             //"Condition": {
             //  "Bool": { "iot:Connection.Thing.IsAttached": "true" },
             //  "StringEquals": {"${iot:Connection.Thing.ThingName}": `${thingName}`}
             //}
+          },
+          {
+            Effect: "Allow",
+            Action: [ "iot:Publish" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${streamIdRequestTopicFilter}`]
+          },
+          {
+            Effect: "Allow",
+            Action: [ "iot:Subscribe" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topicfilter/${streamIdReplyTopicFilter}`]
+          },
+          {
+            Effect: "Allow",
+            Action: [ "iot:Receive" ],
+            Resource: [`arn:aws:iot:${Aws.REGION}:${Aws.ACCOUNT_ID}:topic/${streamIdReplyTopicFilter}`]
           }
         ]
-      },
-    });
-    cfnPolicy.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-    const outputIotPolicyName = new CfnOutput(this, "CustomResource::Output::PolicyName", {
-      value: cfnPolicy.policyName!,
-      description: '',
-      exportName: 'Iot-PolicyName',
-    });
-
-    const policyPrincipalAttachment = new iot.CfnPolicyPrincipalAttachment(
-      this,
-      'PolicyPrincipalAttachment',
-      {
-        policyName: cfnPolicy.policyName!,
-        principal: certificateArn
-      },
-    );
-    policyPrincipalAttachment.addDependsOn(cfnPolicy);
-    policyPrincipalAttachment.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-    const attachCert = new iot.CfnThingPrincipalAttachment(
-      this,
-      'ThingPrincipalAttachment',
-      {
-        thingName: cfnThing.thingName!,
-        principal: certificateArn
       }
-    );
-    attachCert.addDependsOn(cfnThing);
-    attachCert.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-
-    const logActions = ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'];
-    const logPrincipals = [new iam.ServicePrincipal('iot.amazonaws.com')];
-
-    const logGroupOk = new logs.LogGroup(this, 'LogGroup-IotSuccess', {
-      logGroupName: cwIotDeviceLogsLogGroup,
-      retention: logs.RetentionDays.ONE_WEEK,
-      removalPolicy: RemovalPolicy.DESTROY
     });
-    logGroupOk.addToResourcePolicy(new iam.PolicyStatement({
-      actions: logActions,
-      principals: logPrincipals,
-      resources: [logGroupOk.logGroupArn],
-    }));
-    //logGroupOk.grantWrite(iamLogRole);
 
-    const logGroupErr = new logs.LogGroup(this, 'LogGroup-IotErrors', {
-      logGroupName: cwIotDeviceErrorsLogGroup,
-      retention: logs.RetentionDays.ONE_WEEK,
-      removalPolicy: RemovalPolicy.DESTROY
+    const iotThing = new IotThing(this, 'ThingStack-' + thingName, {
+      cfnPolicy: cfnPolicy,
+      thingName: thingName
     });
-    logGroupErr.addToResourcePolicy(new iam.PolicyStatement({
-      actions: logActions,
-      principals: logPrincipals,
-      resources: [logGroupErr.logGroupArn],
-    }));
-    //logGroupErr.grantWrite(iamLogRole);
-
-    const iamLogRole = new iam.Role(this, 'DeviceLogRole', {
-      assumedBy: new iam.ServicePrincipal('iot.amazonaws.com')
-    });
-    iamLogRole.addToPolicy(
-      new iam.PolicyStatement({
-        resources: [logGroupOk.logGroupArn, logGroupErr.logGroupArn],
-        actions: logActions,
-      }),
-    );
 
     //Rule for query topic
-    const sqsRequestRule = new iot.CfnTopicRule(this, 'IotSqsQueryRule', {
+    const sqlSelect = `SELECT deviceId, ts as timestamp, fv as firmwareVersion, batt as battery, `
+      + `gps.lat as gps_lat, gps.lng as gps_lng, gps.alt as gps_alt, seq, `
+      + `timestamp() as server_timestamp, topic() as topic FROM '${streamingLocationTopic}'`
+    const sqsRequestRule = new iot.CfnTopicRule(this, 'IotSqsQueryRule-' + thingName, {
       topicRulePayload: {
-        sql: `SELECT deviceId, ts as timestamp, fv as firmwareVersion, batt as battery, gps.lat as gps_lat, gps.lng as gps_lng, gps.alt as gps_alt, seq, timestamp() as server_timestamp, topic() as topic FROM '${thingTopic}'`,
+        sql: sqlSelect,
         description: "LaFleet - Sends messages to SQS from GPS devices",
         ruleDisabled: false,
         awsIotSqlVersion: '2016-03-23',
@@ -217,43 +155,18 @@ export class DeviceStack extends Stack {
           },
           {
             cloudwatchLogs: {
-              roleArn: iamLogRole.roleArn,
-              logGroupName: logGroupOk.logGroupName
+              roleArn: iotThing.iamLogRole.roleArn,
+              logGroupName: iotThing.logGroupOk.logGroupName
             }
           }
         ],
         errorAction: {
           cloudwatchLogs: {
-            roleArn: iamLogRole.roleArn,
-            logGroupName: logGroupErr.logGroupName
+            roleArn: iotThing.iamLogRole.roleArn,
+            logGroupName: iotThing.logGroupErr.logGroupName
           }
         }
       },
-    });
-
-    const getIoTEndpoint = new cr.AwsCustomResource(this, 'IoTEndpoint', {
-      onCreate: {
-        service: 'Iot',
-        action: 'describeEndpoint',
-        physicalResourceId: cr.PhysicalResourceId.fromResponse('endpointAddress'),
-        parameters: {
-          "endpointType": "iot:Data-ATS"
-        }
-      },
-      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({resources: cr.AwsCustomResourcePolicy.ANY_RESOURCE})
-    });
-
-    const iotEp = getIoTEndpoint.getResponseField('endpointAddress')
-    const outputIotEndpoint = new CfnOutput(this, "EndpointAddress", {
-      value: iotEp.toString(),
-      description: '',
-      exportName: 'Iot-EndpointAddress',
-    });
-
-    const outputThingTopic = new CfnOutput(this, "ThingTopic", {
-      value: thingTopic,
-      description: '',
-      exportName: 'Iot-ThingTopic',
     });
 
     var cicd = new CiCd(this, "CICD-" + repoName, {

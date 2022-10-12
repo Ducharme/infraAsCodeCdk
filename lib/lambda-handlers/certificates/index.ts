@@ -136,8 +136,8 @@ async function listBucketFiles (bucketName: string, prefix: string) {
   return response;
 }
 
-async function read(bucketName: string, accountId: string, region: string) {
-  const keyName = "certs/certificate-id.txt";
+async function read(bucketName: string, thingName: string, accountId: string, region: string) {
+  const keyName = `certs/${thingName}/certificate-id.txt`;
 
   var lst = await listBucketFiles(bucketName, keyName);
   var cnt = parseInt(lst.MaxKeys);
@@ -172,7 +172,7 @@ async function read(bucketName: string, accountId: string, region: string) {
   }
 }
 
-async function create(bucketName: string, accountId: string, region: string) {
+async function create(bucketName: string, thingName: string, accountId: string, region: string) {
 
   var cb = (msg : any) => { console.log("Callback called: " + msg)};
   await downloadFile(AWS_RCA_URL, "/tmp/" + THING_RCA_FILENAME, cb);
@@ -185,21 +185,20 @@ async function create(bucketName: string, accountId: string, region: string) {
   await writeFile("/tmp/" + THING_PUB_FILENAME, kac.keyPair.PublicKey);
   await writeFile("/tmp/" + THING_PRV_FILENAME, kac.keyPair.PrivateKey);
 
-
-  await putObjectFromFile(bucketName, "certs/" + THING_TXT_FILENAME, "/tmp/" + THING_TXT_FILENAME);
-  await putObjectFromFile(bucketName, "certs/" + THING_CRT_FILENAME, "/tmp/" + THING_CRT_FILENAME);
-  await putObjectFromFile(bucketName, "certs/" + THING_PUB_FILENAME, "/tmp/" + THING_PUB_FILENAME);
-  await putObjectFromFile(bucketName, "certs/" + THING_PRV_FILENAME, "/tmp/" + THING_PRV_FILENAME);
-  await putObjectFromFile(bucketName, "certs/" + THING_RCA_FILENAME, "/tmp/" + THING_RCA_FILENAME);
+  await putObjectFromFile(bucketName, `certs/${thingName}/${THING_TXT_FILENAME}`, "/tmp/" + THING_TXT_FILENAME);
+  await putObjectFromFile(bucketName, `certs/${thingName}/${THING_CRT_FILENAME}`, "/tmp/" + THING_CRT_FILENAME);
+  await putObjectFromFile(bucketName, `certs/${thingName}/${THING_PUB_FILENAME}`, "/tmp/" + THING_PUB_FILENAME);
+  await putObjectFromFile(bucketName, `certs/${thingName}/${THING_PRV_FILENAME}`, "/tmp/" + THING_PRV_FILENAME);
+  await putObjectFromFile(bucketName, `certs/${thingName}/${THING_RCA_FILENAME}`, "/tmp/" + THING_RCA_FILENAME);
 
   const certificateArn = `arn:aws:iot:${region}:${accountId}:cert/${kac.certificateId}`;
   return {certificateArn: certificateArn, certificateId: kac.certificateId};
 }
 
-async function get(bucketName: string, accountId: string, region: string) {
-  const data = await read(bucketName, accountId, region);
+async function get(bucketName: string, thingName: string, accountId: string, region: string) {
+  const data = await read(bucketName, thingName, accountId, region);
   if (data === undefined) {
-    return create(bucketName, accountId, region);
+    return create(bucketName, thingName, accountId, region);
   } else {
     return data;
   }
@@ -222,7 +221,7 @@ exports.handler = async function(event : any, context : any) {
 
   try {
     if (event.RequestType === 'Create') {
-      const { certificateArn, certificateId } = await get(bucketName, accountId, region);
+      const { certificateArn, certificateId } = await get(bucketName, thingName, accountId, region);
       return {
         Status: 'SUCCESS',
         PhysicalResourceId: certificateArn,
@@ -236,7 +235,7 @@ exports.handler = async function(event : any, context : any) {
       };
     } else if (event.RequestType === 'Delete') {
       //await thingHandler.delete(thingName);
-      const { certificateArn, certificateId } = await get(bucketName, accountId, region);
+      const { certificateArn, certificateId } = await get(bucketName, thingName, accountId, region);
       console.log(`Deleting thing`);
       return {
         Status: 'SUCCESS',
@@ -250,7 +249,7 @@ exports.handler = async function(event : any, context : any) {
         },
       };
     } else if (event.RequestType === 'Update') {
-      const { certificateArn, certificateId } = await get(bucketName, accountId, region);
+      const { certificateArn, certificateId } = await get(bucketName, thingName, accountId, region);
       //console.log(`Updating thing: ${thingName}`);
       console.log(`Updating thing`);
       return {

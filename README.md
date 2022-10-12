@@ -141,8 +141,8 @@ npm install -g aws-cdk@latest
 
 ## eksctl
 
-https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
-https://eksctl.io/introduction/#installation
+[AWS EKS userguide eksctl](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html)
+ and [eksctl introduction/installation](https://eksctl.io/introduction/#installation)
 ```
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin
@@ -268,17 +268,27 @@ Once completed you should see the map with CloudFront.
 * CloudFront Distribution & OAI
 * CloudWatch Log Groups
 * IAM/roles with inline policies
-* CodeCommit (5x)
-* CodeBuild (5x)
-* CodePipeline (5x)
-* ECR (4x)
+* CodeCommit (7x)
+* CodeBuild (7x)
+* CodePipeline (7x)
+* ECR (6x)
 * EC2/Instances
 * EC2/LoadBalancer
 * EC2/Auto Scaling Groups
 * VPC/NAT gateways
 * EKS cluster
+* API Gateway v2 (HTTP)
 * Lambda/Functions
 * Lambda/Layers
+
+## CodeBuild Repositories (ECR Repository)
+
+* mockIotGpsDeviceAwsSdkV2: Emulated IoT GPS Device based on aws-iot-device-sdk-v2 (mock-iot-gps-device-awssdkv2)
+* iotServer: IoT Server based on aws-iot-device-sdk-v2 (iot-server)
+* sqsDeviceConsumerToRedisearch: SQS Device Consumer writing to Redisearch in TypeScript (sqsdeviceconsumer-toredisearch)
+* sqsShapeConsumerToRedisearch: SQS Shape Consumer writing to Redisearch in TypeScript (sqsshapeconsumer-toredisearch)
+* redisearchQueryClient: Service to query Redisearch in TypeScript (redisearch-query-client)
+* redisPerformanceAnalyticsPy: Redis performance analytics in python3 (redisearch-performance-analytics-py)
 
 
 # Playing with Kubernetes
@@ -366,7 +376,7 @@ FT.SEARCH topic-lnglat-idx "@topic:lafleet/devices/location/+/streaming @lnglat:
 
 ## To play locally with redisearch
 
-Creating the two INDEX
+Creating INDEX
 ```
 sudo docker run --name redisearch-cli --rm -it -d -p 6379:6379 redislabs/redisearch:latest
 

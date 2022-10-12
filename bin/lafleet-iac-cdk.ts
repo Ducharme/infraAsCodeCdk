@@ -2,6 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { CommonStack } from '../lib/CommonStack';
 import { DeviceStack } from '../lib/DeviceStack';
+import { IotServerStack } from '../lib/IotServerStack';
 import { WebsiteStack } from '../lib/WebsiteStack';
 import { DeviceConsumerStack } from '../lib/DeviceConsumerStack';
 import { ShapeConsumerStack } from '../lib/ShapeConsumerStack';
@@ -18,6 +19,10 @@ const deviceStack = new DeviceStack(app, 'LaFleet-DeviceStack', {
     repoCodeFolder: "./tmp/github/mockIotGpsDeviceAwsSdkV2-main",
     sqsQueueRoleArn: commonStack.deviceSqsQueue.sqsQueueRole.roleArn,
     sqsQueueUrl: commonStack.deviceSqsQueue.sqsQueue.queueUrl
+});
+
+const iotServerStack = new IotServerStack(app, 'LaFleet-IotServerStack', {
+    repoCodeFolder: "./tmp/github/iotServer-main"
 });
 
 const shapeStack = new ShapeStack(app, 'LaFleet-ShapeStack', {

@@ -24,8 +24,12 @@ spec:
         env:
         - name: ENDPOINT
           value: "IOT_ENDPOINT"
-        - name: TOPIC
-          value: "THING_TOPIC"
+        - name: STREAMING_LOCATION_TOPIC
+          value: "STREAMING_LOCATION_TOPIC_VALUE"
+        - name: STREAMID_REQUEST_TOPIC
+          value: "STREAMID_REQUEST_TOPIC_VALUE"
+        - name: STREAMID_REPLY_TOPIC
+          value: "STREAMID_REPLY_TOPIC_VALUE"
         - name: INTERVAL
           value: "10000"
         - name: COUNT

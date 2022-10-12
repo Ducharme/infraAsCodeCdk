@@ -30,7 +30,7 @@ export class ShapeCdn extends Construct {
 
     this.distribution = new cdn.Distribution(this, 's3ShapeDist', {
         defaultBehavior: {
-            origin: new cfo.S3Origin(props.shape_web_bucket), // s3origin,
+            origin: new cfo.S3Origin(props.shape_web_bucket),
             viewerProtocolPolicy: cdn.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             allowedMethods: cdn.AllowedMethods.ALLOW_GET_HEAD,
             cachedMethods: cdn.CachedMethods.CACHE_GET_HEAD,

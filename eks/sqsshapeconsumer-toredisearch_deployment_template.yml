@@ -29,8 +29,6 @@ spec:
           value: "AWS_REGION_VALUE"
         - name: SQS_QUEUE_URL
           value: "SQS_QUEUE_URL_VALUE"
-        - name: TOPIC
-          value: "TOPIC_VALUE"
         resources:
           limits:
             memory: "60Mi"

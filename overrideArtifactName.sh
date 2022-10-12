@@ -22,6 +22,8 @@ overrideValue(){
 
 echo "Overriding CodeProject ArtifactName on $DEVICE_REPO"
 overrideValue $DEVICE_REPO
+echo "Overriding CodeProject ArtifactName on $IOT_SERVER_REPO"
+overrideValue $IOT_SERVER_REPO
 echo "Overriding CodeProject ArtifactName on $DEVICE_CONSUMER_REPO"
 overrideValue $DEVICE_CONSUMER_REPO
 echo "Overriding CodeProject ArtifactName on $SHAPE_CONSUMER_REPO"
