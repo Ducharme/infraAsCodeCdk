@@ -1,7 +1,8 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack } from 'aws-cdk-lib';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
+import { Effect } from 'aws-cdk-lib/aws-iam';
 
 
 export interface SqsQueueProps {
@@ -14,7 +15,7 @@ export class SqsQueue extends Construct {
   public readonly sqsDlqName: string;
 
   public readonly sqsQueue: sqs.Queue;
-  public readonly sqsQueueRole : iam.Role;
+  public readonly sqsQueueRole : iam.Role; // For SQS IoT Rule
   public readonly sqsDeadLetterQueue: sqs.DeadLetterQueue;
 
   public readonly maxMessageSizeBytes = 2048;
@@ -52,6 +53,26 @@ export class SqsQueue extends Construct {
     );
 
     this.sqsQueueRole = sqsRole1;
+    //this.sqsQueue.grantConsumeMessages(sqsRole1);
+
+    // Service will get roles from eksctl -> PROJECT_NAME-eks-sa-sqsshapeconsumer
+    // Not availaible for SQS -> "aws:ResourceAccount": awsAccountId,
+    // Not availaible for on webpage below ->"aws:SourceOwner": awsAccountId,
+    // https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html
+    const awsAccountId : string = Stack.of(this).account;
+    const anyPrincipal = new iam.AnyPrincipal();
+    const sqsGrantPolicy = new iam.PolicyStatement({
+        actions: ['sqs:DeleteMessage', 'sqs:ReceiveMessage'],
+        principals: [anyPrincipal],
+        resources: [this.sqsQueue.queueArn],
+        conditions: {
+          StringEquals: {
+            "aws:PrincipalAccount": awsAccountId,
+            "AWS:SourceAccount": awsAccountId
+          }
+        }
+    });
+    this.sqsQueue.addToResourcePolicy(sqsGrantPolicy);
 
     const sqsQueueNameOutput = new CfnOutput(this, "SqsQueueName-" + props.label, {
       value: this.sqsQueue.queueName,

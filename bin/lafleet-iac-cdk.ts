@@ -22,7 +22,7 @@ const deviceStack = new DeviceStack(app, 'LaFleet-DeviceStack', {
 });
 
 const iotServerStack = new IotServerStack(app, 'LaFleet-IotServerStack', {
-    repoCodeFolder: "./tmp/github/iotServer-main"
+    repoCodeFolder: "./tmp/github/iotServer-main",
 });
 
 const shapeStack = new ShapeStack(app, 'LaFleet-ShapeStack', {

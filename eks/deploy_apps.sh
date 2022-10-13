@@ -31,6 +31,25 @@ kubectl exec $POD_NAME -- redis-cli $SHAPE_INDEX_TYPE
 kubectl exec $POD_NAME -- redis-cli $SHAPE_INDEX_LOC_FILTER
 kubectl exec $POD_NAME -- redis-cli $SHAPE_INDEX_LOC_MATCH
 
+
+########## eks/iot-server.yml ##########
+
+IMAGE_REPO_NAME_VALUE=iot-server
+
+IMAGE_VALUE=$AWS_ACCOUNT_ID_VALUE.dkr.ecr.$AWS_REGION_VALUE.amazonaws.com/$IMAGE_REPO_NAME_VALUE:latest
+IOT_ENDPOINT=$(aws iot describe-endpoint --endpoint-type iot:Data-ATS --query endpointAddress | tr -d '"')
+
+TEMPLATE_YAML=./eks/iot-server_deployment_template.yml
+VALUES_YAML=./eks/iot-server_deployment.yml
+cp $TEMPLATE_YAML $VALUES_YAML
+
+sed -i 's@IOT_ENDPOINT@'"$IOT_ENDPOINT"'@g' $VALUES_YAML
+sed -i 's@STREAMID_REQUEST_TOPIC_VALUE@'"$STREAMID_REQUEST_TOPIC"'@g' $VALUES_YAML
+sed -i 's@STREAMID_REPLY_TOPIC_VALUE@'"$STREAMID_REPLY_TOPIC"'@g' $VALUES_YAML
+
+kubectl apply -f $VALUES_YAML
+
+
 ########## eks/redisearch-performance-analytics-py_service.yml ##########
 
 IMAGE_REPO_NAME_VALUE=redisearch-performance-analytics-py

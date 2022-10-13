@@ -136,7 +136,7 @@ export class DeviceStack extends Stack {
     });
 
     //Rule for query topic
-    const sqlSelect = `SELECT deviceId, ts as timestamp, fv as firmwareVersion, batt as battery, `
+    const sqlSelect = `SELECT deviceId, streamId, state, ts as timestamp, fv as firmwareVersion, batt as battery, `
       + `gps.lat as gps_lat, gps.lng as gps_lng, gps.alt as gps_alt, seq, `
       + `timestamp() as server_timestamp, topic() as topic FROM '${streamingLocationTopic}'`
     const sqsRequestRule = new iot.CfnTopicRule(this, 'IotSqsQueryRule-' + thingName, {

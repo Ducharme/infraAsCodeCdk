@@ -40,31 +40,22 @@ checkIfBucketExists $S3_SHAPE_REPO
 
 # TODO: Fix teh FOUND not keeping its value
 SQS_QUEUE_LST=$(aws sqs list-queues | grep https  | tr -d '", ')
-checkIfQueueExists(){
+checkIfQueuesExist(){
     SQS_QUEUE_ARG=$1
 
     #https://sqs.ap-southeast-1.amazonaws.com/748293476463/lafleet-shape-messages-dlq
     SQS_QUEUE_URL_EXP=https://sqs.$AWS_REGION_VALUE.amazonaws.com/$AWS_ACCOUNT_ID_VALUE/$SQS_QUEUE_ARG
-
-    FOUND=FALSE
-    echo "$SQS_QUEUE_LST" | tr ' ' '\n' | while read item; do
-        if [ "$SQS_QUEUE_URL_EXP" = "$item" ]; then
-            FOUND=TRUE
-            break
-        fi
-    done
-
-    if [ "$FOUND" = "TRUE" ]; then
-        echo "OK queue $SQS_QUEUE_URL_EXP exists"
+    SQS_QUEUE_CNT=$(echo "$SQS_QUEUE_LST" | grep $SQS_QUEUE_URL_EXP | wc -l)
+    
+    if [ "$SQS_QUEUE_CNT" = "2" ]; then
+        echo "OK queue $SQS_QUEUE_URL_EXP and its dlq exist"
     else
-        echo "NOK queue $SQS_QUEUE_URL_EXP does not exist"
+        echo "NOK queue $SQS_QUEUE_URL_EXP and its dlq do not exist"
     fi
 }
 
-checkIfQueueExists $DEVICE_SQS_QUEUE_NAME
-checkIfQueueExists $DEVICE_SQS_QUEUE_NAME-dlq
-checkIfQueueExists $SHAPE_SQS_QUEUE_NAME
-checkIfQueueExists $SHAPE_SQS_QUEUE_NAME-dlq
+checkIfQueuesExist $DEVICE_SQS_QUEUE_NAME
+checkIfQueuesExist $SHAPE_SQS_QUEUE_NAME
 
 
 ##################################################
@@ -261,6 +252,13 @@ checkCiCdHealth(){
         ECR_CHK=$(echo "$ECR_REPO_LIST" | grep $ECR_ARG)
         if [ ! -z "$ECR_CHK" ]; then
             echo "OK ecr repo $ECR_ARG exists"
+
+            ECK_IMAGE_LATEST=$(aws ecr list-images --repository-name iot-server | jq '.imageIds[] | select (.imageTag == "latest") | .imageDigest' | grep sha256)
+            if [ ! -z "$ECK_IMAGE_LATEST" ]; then
+                echo "OK ecr repo $ECR_ARG latest image exists"
+            else
+                echo "NOK ecr repo $ECR_ARG latest image does not exist"
+            fi
         else
             echo "NOK ecr repo $ECR_ARG does not exist"
         fi
