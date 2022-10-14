@@ -85,7 +85,7 @@ export class ShapeStack extends Stack {
         );
 
         var arp = new iam.AccountRootPrincipal();
-        var s3actions = ['s3:GetObject', 's3:PutObject', 's3:GetObjectVersion'];
+        var s3actions = ['s3:GetObject', 's3:PutObject', 's3:GetObjectVersion', 's3:ListBucket'];
         var s3res = [shape_repo_bucket.bucketArn, shape_repo_bucket.arnForObjects('*')];
     
         var ps = new iam.PolicyStatement({

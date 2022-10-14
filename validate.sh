@@ -309,5 +309,12 @@ else
 fi
 
 
+API_GW=$(aws apigatewayv2 get-apis | jq '.Items[] | select (.Name == "ShapesHttpApi") | .ApiEndpoint' | tr -d '"')
+if [ ! -z "$API_GW" ]; then
+    echo "OK api gateway ShapesHttpApi exists"
+else
+    echo "NOK api gateway ShapesHttpApi does not exist"
+fi
+
 echo "FINISHED!"
 
