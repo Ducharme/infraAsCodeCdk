@@ -16,8 +16,8 @@ n=0
 until [ "$n" -ge 20 ]
 do
     GET_NODES=$(kubectl get no -o json | jq '.items[] | .status.conditions[] | select(.type == "Ready" and .status == "True") | .type' | tr -d '"')
-    READY_CNT=$(echo "$GET_NODES" | wc -l)
-    echo "READY_CNT $READY_CNT"
+    READY_CNT=$(echo "$GET_NODES" | grep "Ready" | wc -l)
+    echo "$READY_CNT nodes are ready"
     if [ "$READY_CNT" = "$I" ]; then
         break
     fi

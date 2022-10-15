@@ -29,7 +29,7 @@ LOG_CACHE=$(cat "$LOG_DIR/pod.log")
 IOT_SUB_CNT=$(echo "$LOG_CACHE" | grep "Subscribing returned" | wc -l)
 IOT_RCV_CNT=$(echo "$LOG_CACHE" | grep "Message received on topic" | wc -l)
 IOT_PUB_ED_CNT=$(echo "$LOG_CACHE" | grep "Published to" | wc -l)
-if [ "$IOT_SUB_CNT" = "2" ] && [ "$IOT_RCV_CNT" = "2" ] && [ "$IOT_PUB_ED_CNT" = "2" ]; then
+if [ "$IOT_SUB_CNT" = "1" ] && [ "$IOT_RCV_CNT" = "2" ] && [ "$IOT_PUB_ED_CNT" = "2" ]; then
     echo "OK pod $POD_NAME succeeded according to logs, see $LOG_DIR/pod.log for details"
 else
     echo "NOK pod $POD_NAME did not succeed according to logs, see $LOG_DIR/pod.log for details"
@@ -42,7 +42,7 @@ else
     echo "OK pod $POD_NAME was interrupted according to logs, see $LOG_DIR/pod.log for details"
 fi
 
-SERVER_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed")
+SERVER_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed\|Error\|error" | grep -v "error_code")
 if [ ! -z "$REDIS_FAILED" ]; then
     echo "NOK pod $POD_NAME encountered failures in logs, see $LOG_DIR/pod.log for details"
 else
@@ -85,7 +85,7 @@ echo "$POD_NAMES" | tr ' ' '\n' | while read POD_NAME; do
         echo "OK pod $POD_NAME did not encounter interruption according to logs, see $LOG_DIR/pod.log for details"
     fi
 
-    DEVICE_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed\|Error\|error")
+    DEVICE_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed\|Error\|error" | grep -v "error_code")
     if [ ! -z "$DEVICE_FAILED" ]; then
         echo "NOK pod $POD_NAME encountered failures in logs, see $LOG_DIR/pod.log for details"
     else
@@ -148,6 +148,11 @@ if [ ! -z "$RADIUS_SEARCH_DEVICES_CHK" ]; then
 else
     echo "NOK devices do not exist on $ENDPOINT"
 fi
+
+# Check queryService logs to look for errors
+
+# TODO: Implementsee sqs consume and redis publish
+
 
 ENDPOINT=https://$DN_REACT/query/h3/aggregate/devices/count
 AGGREGATE_DEVICES_CNT=$(curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d "{ \"h3resolution\": \"0\", \"h3indices\": [ $ALL_H0 ] }" $ENDPOINT)

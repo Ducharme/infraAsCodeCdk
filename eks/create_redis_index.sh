@@ -18,7 +18,8 @@ SHAPE_INDEX_TYPE="FT.CREATE shape-type-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.t
 SHAPE_INDEX_LOC_FILTER="FT.CREATE shape-loc-filter-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.status AS status TEXT $.type AS type TEXT $.filter.h3r0.* AS f_h3r0 TAG $.filter.h3r1.* AS f_h3r1 TAG $.filter.h3r2.* AS f_h3r2 TAG $.filter.h3r3.* AS f_h3r3 TAG $.filter.h3r4.* AS f_h3r4 TAG $.filter.h3r5.* AS f_h3r5 TAG $.filter.h3r6.* AS f_h3r6 TAG $.filter.h3r7.* AS f_h3r7 TAG $.filter.h3r8.* AS f_h3r8 TAG $.filter.h3r9.* AS f_h3r9 TAG $.filter.h3r10.* AS f_h3r10 TAG $.filter.h3r11.* AS f_h3r11 TAG $.filter.h3r12.* AS f_h3r12 TAG $.filter.h3r13.* AS f_h3r13 TAG $.filter.h3r14.* AS f_h3r14 TAG $.filter.h3r15.* AS f_h3r15 TAG"
 SHAPE_INDEX_LOC_MATCH="FT.CREATE shape-loc-match-idx ON JSON PREFIX 1 SHAPELOC: SCHEMA $.status AS status TEXT $.type AS type TEXT $.shape.h3r0.* AS s_h3r0 TAG $.shape.h3r1.* AS s_h3r1 TAG $.shape.h3r2.* AS s_h3r2 TAG $.shape.h3r3.* AS s_h3r3 TAG $.shape.h3r4.* AS s_h3r4 TAG $.shape.h3r5.* AS s_h3r5 TAG $.shape.h3r6.* AS s_h3r6 TAG $.shape.h3r7.* AS s_h3r7 TAG $.shape.h3r8.* AS s_h3r8 TAG $.shape.h3r9.* AS s_h3r9 TAG $.shape.h3r10.* AS s_h3r10 TAG $.shape.h3r11.* AS s_h3r11 TAG $.shape.h3r12.* AS s_h3r12 TAG $.shape.h3r13.* AS s_h3r13 TAG $.shape.h3r14.* AS s_h3r14 TAG $.shape.h3r15.* AS s_h3r15 TAG"
 
-# NOTE: do not quote the INDEX env var
+echo "Creating index in Redis"
+# NOTE: Do not quote the INDEX env var
 kubectl exec $REDIS_POD_NAME -- redis-cli $DEVICE_INDEX_H3
 kubectl exec $REDIS_POD_NAME -- redis-cli $DEVICE_INDEX_LOC
 kubectl exec $REDIS_POD_NAME -- redis-cli $SHAPE_INDEX_TYPE

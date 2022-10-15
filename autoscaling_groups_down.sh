@@ -12,7 +12,9 @@ echo "Waiting for nodes to shutdown"
 n=0
 until [ "$n" -ge 20 ]
 do
+    # Kubernetes takes longer to update (kubelet will stop receiving updates) than ec2
     GET_NODES_CNT=$(kubectl get no -o json | jq '.items | length')
+    echo "$GET_NODES_CNT nodes remaining"
     if [ "$GET_NODES_CNT" = "0" ]; then
         break
     fi
