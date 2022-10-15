@@ -26,45 +26,119 @@ LOG_DIR=$CHK_DIR/logs/$POD_NAME
 mkdir -p "$LOG_DIR"
 kubectl logs $POD_NAME > "$LOG_DIR/pod.log"
 LOG_CACHE=$(cat "$LOG_DIR/pod.log")
-IOT_SUB_CNT=$(echo "$LOG_CACHE" | grep "Subscribing returned" | wc-l)
-IOT_RCV_CNT=$(echo "$LOG_CACHE" | grep "Message received on topic" | wc-l)
-IOT_PUB_ED_CNT=$(echo "$LOG_CACHE" | grep "Published to" | wc-l)
+IOT_SUB_CNT=$(echo "$LOG_CACHE" | grep "Subscribing returned" | wc -l)
+IOT_RCV_CNT=$(echo "$LOG_CACHE" | grep "Message received on topic" | wc -l)
+IOT_PUB_ED_CNT=$(echo "$LOG_CACHE" | grep "Published to" | wc -l)
 if [ "$IOT_SUB_CNT" = "2" ] && [ "$IOT_RCV_CNT" = "2" ] && [ "$IOT_PUB_ED_CNT" = "2" ]; then
-    echo "OK pod iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+    echo "OK pod $POD_NAME succeeded according to logs, see $LOG_DIR/pod.log for details"
 else
-    echo "NOK pod iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+    echo "NOK pod $POD_NAME did not succeed according to logs, see $LOG_DIR/pod.log for details"
 fi
 
 IOT_CLIENT_ERR=$(echo "$LOG_CACHE" | grep "Client was interrupted")
 if [ ! -z "$IOT_CLIENT_ERR" ]; then
-    echo "NOK pod lafleet-iot-server encountered failures in logs, see $LOG_DIR/pod.log for details"
+    echo "NOK pod $POD_NAME was interrupted according in logs, see $LOG_DIR/pod.log for details"
 else
-    echo "OK pod lafleet-iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+    echo "OK pod $POD_NAME was interrupted according to logs, see $LOG_DIR/pod.log for details"
 fi
 
 SERVER_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed")
 if [ ! -z "$REDIS_FAILED" ]; then
-    echo "NOK pod lafleet-iot-server encountered failures in logs, see $LOG_DIR/pod.log for details"
+    echo "NOK pod $POD_NAME encountered failures in logs, see $LOG_DIR/pod.log for details"
 else
-    echo "OK pod lafleet-iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+    echo "OK pod $POD_NAME did not encounter failure in logs, see $LOG_DIR/pod.log for details"
 fi
 
 
 # Check mock device logs to see publish
 
-# Starting based on values from Env Vars
-# Values endpoint:ahp9n1hu76nbz-ats.iot.ap-southeast-1.amazonaws.com, streamIdRequestTopic:lafleet/devices/streamId/+/request, streamIdReplyTopic:lafleet/devices/streamId/+/reply, interval:10000, count:0, message:undefined, idle:false, client_id:undefined, use_websocket:false, signing_region:undefined, ca_file:./certs/root-ca.crt, cert_file:./certs/certificate.pem.crt, key_file:./certs/private.pem.key, proxy_host:undefined, proxy_port:0, verbosity:undefined
-# Values clientId:client-89097521, streamingLocationTopic:lafleet/devices/location/client-89097521/streaming, firmwareVersion:0.0.1, maxGracePeriod:5000, maxLifespan:0, certificateId:0d49267cdf8e329e57128de9ce780c0133a9297632d1b0aaae588e70ea58ae6b
-# Client has connected: false
-# Subscribing returned {"packet_id":1,"topic":"lafleet/devices/streamId/client-89097521/reply","qos":1,"error_code":0}
-# Publishing to lafleet/devices/streamId/client-89097521/request returned {"packet_id":2}
-# Client is messaged: lafleet/devices/streamId/client-89097521/reply
-# Message received on topic lafleet/devices/streamId/client-89097521/reply {"deviceId":"client-89097521","streamId":0,"seq":0,"serverId":"server-41754626"} (dup:false qos:1 retain:false)
-# {"deviceId":"client-89097521","streamId":0,"state":"ACTIVE","ts":1665811770546,"fv":"0.0.1","batt":100,"gps":{"lat":45.42243644920908,"lng":-73.68514355079093,"alt":58.935220449209076},"seq":1}
-# {"deviceId":"client-89097521","streamId":0,"state":"ACTIVE","ts":1665811780547,"fv":"0.0.1","batt":100,"gps":{"lat":45.13082913235874,"lng":-73.97675086764127,"alt":58.64361313235874},"seq":2}
+POD_NAMES=$(kubectl get po | grep lafleet-devices-slow | cut -d ' ' -f1)
+
+echo "$POD_NAMES" | tr ' ' '\n' | while read POD_NAME; do
+    LOG_DIR=$CHK_DIR/logs/$POD_NAME
+    mkdir -p "$LOG_DIR"
+    kubectl logs $POD_NAME > "$LOG_DIR/pod.log"
+    LOG_CACHE=$(cat "$LOG_DIR/pod.log")
+    DEV_VAL_CNT=$(echo "$LOG_CACHE" | grep "Starting based on values from")
+    DEV_EP_CNT=$(echo "$LOG_CACHE" | grep "Values endpoint")
+    DEV_ID_CNT=$(echo "$LOG_CACHE" | grep "Values clientId")
+    if [ ! -z "$DEV_VAL_CNT" ] && [ ! -z "$DEV_EP_CNT" ] && [ ! -z "$DEV_ID_CNT" ]; then
+        echo "OK pod $POD_NAME succeeded according to startup logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "NOK pod $POD_NAME did not succeed according to startup logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    DEV_SUB_RET=$(echo "$LOG_CACHE" | grep "Subscribing returned")
+    DEV_PUB_TO=$(echo "$LOG_CACHE" | grep "Publishing to")
+    DEV_RCV_TOP=$(echo "$LOG_CACHE" | grep "Message received on topic")
+    DEV_PUB_ST=$(echo "$LOG_CACHE" | grep "ACTIVE")
+    if [ ! -z "$DEV_SUB_RET" ] && [ ! -z "$DEV_PUB_TO" ] && [ ! -z "$DEV_RCV_TOP" ]  && [ ! -z "$DEV_PUB_ST" ]; then
+        echo "OK pod $POD_NAME succeeded according to subscription logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "NOK pod $POD_NAME succeeded according to subscription logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    DEV_CLIENT_ERR=$(echo "$LOG_CACHE" | grep "Client was interrupted")
+    if [ ! -z "$DEV_CLIENT_ERR" ]; then
+        echo "NOK pod $POD_NAME encountered interruptions in logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "OK pod $POD_NAME did not encounter interruption according to logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    DEVICE_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed\|Error\|error")
+    if [ ! -z "$DEVICE_FAILED" ]; then
+        echo "NOK pod $POD_NAME encountered failures in logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "OK pod $POD_NAME did not encounter failures to logs, see $LOG_DIR/pod.log for details"
+    fi
+done
+
 
 # Check sqsDevice logs to see sqs consume and redis publish
 
+POD_NAMES=$(kubectl get po | grep lafleet-device-consumers | cut -d ' ' -f1)
+
+echo "$POD_NAMES" | tr ' ' '\n' | while read POD_NAME; do
+    LOG_DIR=$CHK_DIR/logs/$POD_NAME
+    mkdir -p "$LOG_DIR"
+    kubectl logs $POD_NAME > "$LOG_DIR/pod.log"
+    LOG_CACHE=$(cat "$LOG_DIR/pod.log")
+    SQS_REDIS_CON=$(echo "$LOG_CACHE" | grep "Redis client connected")
+    SQS_REDIS_READY=$(echo "$LOG_CACHE" | grep "Redis client ready")
+    SQS_SQS_WAITING=$(echo "$LOG_CACHE" | grep "Waiting...")
+    if [ ! -z "$SQS_REDIS_CON" ] && [ ! -z "$SQS_REDIS_READY" ] && [ ! -z "$SQS_SQS_WAITING" ]; then
+        echo "OK pod $POD_NAME succeeded according to startup logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "NOK pod $POD_NAME did not succeed according to startup logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    SQS_RCV_MSG=$(echo "$LOG_CACHE" | grep "Received sqs message")
+    SQS_HSET=$(echo "$LOG_CACHE" | grep "Succeeded to hSet key")
+    SQS_XADD=$(echo "$LOG_CACHE" | grep "Succeeded to xAdd key")
+    SQS_UPD=$(echo "$LOG_CACHE" | grep "Redis updated successfully")
+    if [ ! -z "$SQS_RCV_MSG" ] && [ ! -z "$SQS_HSET" ] && [ ! -z "$SQS_XADD" ]  && [ ! -z "$SQS_UPD" ]; then
+        echo "OK pod $POD_NAME succeeded according to subscription logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "NOK pod $POD_NAME did not succeed according to subscription logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    SQS_CLIENT_ERR=$(echo "$LOG_CACHE" | grep "Redis client disconnected")
+    if [ ! -z "$SQS_CLIENT_ERR" ]; then
+        echo "NOK pod $POD_NAME encountered disconnections in logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "OK pod $POD_NAME did not encounter disconnection in logs, see $LOG_DIR/pod.log for details"
+    fi
+
+    SQS_FAILED=$(echo "$LOG_CACHE" | grep "Failed\|failed\|Error\|error")
+    if [ ! -z "$SQS_FAILED" ]; then
+        echo "NOK pod $POD_NAME encountered failures in logs, see $LOG_DIR/pod.log for details"
+    else
+        echo "OK pod $POD_NAME did not encounter failures in logs, see $LOG_DIR/pod.log for details"
+    fi
+done
+
+
+# Check endpoints
 
 ENDPOINT=https://$DN_REACT/query/radius/search/devices/list
 RADIUS_SEARCH_DEVICES_LST=$(curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '{ "longitude": -73.561668, "latitude": 45.508888, "distance": 5000, "distanceUnit": "km" }' $ENDPOINT)
@@ -86,4 +160,40 @@ echo "AGGREGATE_DEVICES_VAL -> $AGGREGATE_DEVICES_VAL"
 #    echo "NOK devices do not exist on $ENDPOINT"
 #fi
 
-# Performance
+
+#################### ANALYTICS ###############
+
+# TODO: Implement checks for pod encountered failures
+
+#curl -X POST -H "Content-Type: application/json" https://$DN_REACT/analytics/devices/data
+#curl -X POST -H "Content-Type: application/json" https://$DN_REACT/analytics/devices/stats
+
+
+# INFO:waitress:Serving on http://0.0.0.0:5973
+# ERROR:main:Exception on /devices/stats [POST]
+# Traceback (most recent call last):
+#   File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 2525, in wsgi_app
+#     response = self.full_dispatch_request()
+#   File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1822, in full_dispatch_request
+#     rv = self.handle_user_exception(e)
+#   File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1820, in full_dispatch_request
+#     rv = self.dispatch_request()
+#   File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1796, in dispatch_request
+#     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+#   File "/home/user/main.py", line 76, in getStats
+#     summary_all, stats_all, summary_rng, stats_rng = PerformanceStatistics.getStatsAsJson()
+#   File "/home/user/performancestatistics.py", line 275, in getStatsAsJson
+#     min_val = round(min(gvalues), 1)
+# ValueError: min() arg is an empty sequence
+
+# POD_NAME=$(kubectl get po | grep lafleet-analytics | cut -d ' ' -f1)
+# LOG_DIR=$CHK_DIR/logs/$POD_NAME
+# mkdir -p "$LOG_DIR"
+# kubectl logs $POD_NAME > "$LOG_DIR/pod.log"
+# LOG_CACHE=$(cat "$LOG_DIR/pod.log")
+# ANA_SVC_START=$(echo "$LOG_CACHE" | grep "INFO:waitress:Serving on")
+# if [ ! -z "$ANA_SVC_START" ]; then
+#     echo "OK pod iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+# else
+#     echo "NOK pod iot-server succeeded according to logs, see $LOG_DIR/pod.log for details"
+# fi
