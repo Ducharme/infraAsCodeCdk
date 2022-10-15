@@ -58,6 +58,8 @@ waitForPodToStop sqsdeviceconsumer-toredisearch $DEVICE_CONSUMER_YAML
 waitForPodToStop redisearch $REDISEARCH_YAML
 
 
+echo "Pods are stopped. Now starting them..."
+
 ##### Apply
 
 waitForPodToRun(){
@@ -90,3 +92,5 @@ waitForPodToRun sqsdeviceconsumer-toredisearch $DEVICE_CONSUMER_YAML
 waitForPodToRun sqsshapeconsumer-toredisearch $SHAPE_CONSUMER_YAML
 waitForPodToRun mock-iot-gps-device-awssdkv2 $MOCK_DEVICE_YAML
 waitForPodToRun redisearch-query-client $QUERY_YAML
+
+echo "FINISHED"

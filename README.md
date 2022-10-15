@@ -222,7 +222,7 @@ Run below script (tested with Lubuntu 20.04 default terminal)
 npm install
 cdk bootstrap
 sh ./run_synth.sh
-sh ./main_create.sh
+sh ./main_create_core.sh
 ```
 Note: It is recommended to have FORCE=TRUE set
 
@@ -400,7 +400,7 @@ FT._LIST
 
 Execute
 ```
-sh ./main_delete.sh
+sh ./main_delete_all.sh
 ```
 Note: It is recommended to have FORCE=TRUE
 
