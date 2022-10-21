@@ -174,6 +174,10 @@ echo "AGGREGATE_DEVICES_VAL -> $AGGREGATE_DEVICES_VAL"
 #curl -X POST -H "Content-Type: application/json" https://$DN_REACT/analytics/devices/stats
 
 
+# {"summary_all": {"start_end": "Start time 2022-10-15 22:52:49.718000 and end 2022-10-15 22:54:49.988000", "first_last": "First record 2022-10-15 22:52:49.718000 and last 2022-10-15 22:54:49.988000, timedelta 120.27 seconds", "devices": "2 devices with stats out of 2", "records": "26 records with stats out of 26, 0.21618026107923838 records/sec"}, "stats_all"
+# {"summary_rng": {"start_end": "Start time 2022-10-15 22:52:54.817000 and end 2022-10-15 22:54:44.873000", "first_last": "First record 9999-12-31 23:59:59.999999 and last 0001-01-01 00:00:00, timedelta -86400.0 seconds", "devices": "0 devices with stats out of 0", "records": "0 records with stats out of 0, -0.0 records/sec"}, "stats_rng"
+
+
 # INFO:waitress:Serving on http://0.0.0.0:5973
 # ERROR:main:Exception on /devices/stats [POST]
 # Traceback (most recent call last):

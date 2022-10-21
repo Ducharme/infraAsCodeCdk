@@ -1,4 +1,4 @@
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, Duration } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cdn from 'aws-cdk-lib/aws-cloudfront';
 import * as cfo from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -23,11 +23,13 @@ export class ShapeCdn extends Construct {
       throw new Error("Environement variable AWS_REGION_VALUE is not defined");
     }
     
-    // Creates a distribution from an S3 bucket.
     const shapeCachePolicy = new cdn.CachePolicy(this, 'ShapeCachePolicy', {
         queryStringBehavior: cdn.CacheQueryStringBehavior.allowList('versionId')
     });
 
+    const errorPagePath = "/error.html";
+    const errorMinTtl = Duration.seconds(300);
+    // Creates a distribution from an S3 bucket.
     this.distribution = new cdn.Distribution(this, 's3ShapeDist', {
         defaultBehavior: {
             origin: new cfo.S3Origin(props.shape_web_bucket),
@@ -38,8 +40,77 @@ export class ShapeCdn extends Construct {
             compress: false
         },
         comment: "LaFleet Shape Cache",
+        defaultRootObject: "index.html",
         httpVersion: cdn.HttpVersion.HTTP2_AND_3,
         minimumProtocolVersion: cdn.SecurityPolicyProtocol.TLS_V1_2_2021,
+        errorResponses: [
+          {
+              httpStatus: 400,
+              responseHttpStatus: 400,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 403,
+              responseHttpStatus: 403,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 404,
+              responseHttpStatus: 404,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 405,
+              responseHttpStatus: 405,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 414,
+              responseHttpStatus: 414,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 416,
+              responseHttpStatus: 416,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 500,
+              responseHttpStatus: 500,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 501,
+              responseHttpStatus: 501,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 502,
+              responseHttpStatus: 502,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 503,
+              responseHttpStatus: 503,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          },
+          {
+              httpStatus: 504,
+              responseHttpStatus: 504,
+              responsePagePath: errorPagePath,
+              ttl: errorMinTtl
+          }
+      ]
     });
 
     const cdnDistIdOutput = new CfnOutput(this, "ShapeCloudFrontDistributionId", {

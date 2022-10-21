@@ -47,6 +47,12 @@ export class ShapeStack extends Stack {
             bucketName: shape_repo_bucket_name
         });
 
+        const s3ShapeRepoBucketNameOutput = new CfnOutput(this, "S3ShapeRepoBucketNameOutput", {
+            value: shape_repo_bucket.bucketName,
+            description: '',
+            exportName: 'S3ShapeRepoBucketName',
+        });
+
         /********** SQS QUEUES **********/
 
         const sqsShapeQueueName : string = projectName + "-shape-messages";
@@ -150,7 +156,7 @@ export class ShapeStack extends Stack {
         });
 
         // Pattern is https://<random>.execute-api.<region>.amazonaws.com/upload-shape
-        new CfnOutput(this, 'UploadShapeLink', { value: uploadRoute[0].httpApi.apiEndpoint + uploadShapePath });
+        new CfnOutput(this, 'UploadShapeLink', { value: uploadRoute[0].httpApi.apiEndpoint + uploadShapePath, exportName: "ApiGw-UploadShapeLink" });
 
 
         /********** CLOUDFRONT **********/

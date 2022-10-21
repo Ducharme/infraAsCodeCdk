@@ -76,6 +76,8 @@ export class IotServerStack extends Stack {
     const clientFilter = "${iot:ClientId}";
     // NOTE: When not set properly the connect might success but first message afterward will disconnect.
     // -> Error: libaws-c-mqtt: AWS_ERROR_MQTT_UNEXPECTED_HANGUP, The connection was closed unexpectedly.
+    // NOTE: Explore retained messages for device streamId requests (could accumulate too muchover time)
+    // https://aws.amazon.com/about-aws/whats-new/2021/08/aws-iot-core-supports-mqtt-retained-messages/
     const cfnPolicy = new iot.CfnPolicy(this, 'Thing-' + policyName, {
       policyName: thingPolicyName,
       policyDocument: {
@@ -110,6 +112,13 @@ export class IotServerStack extends Stack {
       thingName: thingName
     });
 
+    //Rule for query topic
+    const requestSqlSelect = `SELECT deviceId, timestamp() as server_timestamp, topic() as topic FROM '${streamIdRequestTopic}'`;
+    this.CreateTopicRule('IotRequestCloudWatchRule-' + thingName, requestSqlSelect, "LaFleet - Sends request messages to CloudWatch", iotThing);
+
+    const replySqlSelect = `SELECT deviceId, streamId, seq, serverId, timestamp() as server_timestamp, topic() as topic FROM '${streamIdRequestTopic}'`;
+    this.CreateTopicRule('IotReplyCloudWatchRule-' + thingName, replySqlSelect, "LaFleet - Sends reply messages to CloudWatch", iotThing);
+
     var cicd = new CiCd(this, "CICD-" + repoName, {
       repoName: repoName,
       repoDescription: repoDesc,
@@ -119,6 +128,31 @@ export class IotServerStack extends Stack {
       object_store_bucket_name: object_store_bucket_name,
       codebuild_artifact_bucket_name: codebuild_artifact_bucket_name,
       codepipeline_artifact_bucket_name: codepipeline_artifact_bucket_name
+    });
+  }
+
+  private CreateTopicRule(id: string, sqlQuery: string, description: string, iotThing: IotThing) {
+    new iot.CfnTopicRule(this, id, {
+      topicRulePayload: {
+        sql: sqlQuery,
+        description: description,
+        ruleDisabled: false,
+        awsIotSqlVersion: '2016-03-23',
+        actions: [
+          {
+            cloudwatchLogs: {
+              roleArn: iotThing.iamLogRole.roleArn,
+              logGroupName: iotThing.logGroupOk.logGroupName
+            }
+          }
+        ],
+        errorAction: {
+          cloudwatchLogs: {
+            roleArn: iotThing.iamLogRole.roleArn,
+            logGroupName: iotThing.logGroupErr.logGroupName
+          }
+        }
+      },
     });
   }
 }

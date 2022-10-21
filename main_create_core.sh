@@ -91,7 +91,7 @@ node ./lib/script-utils/main.js $IOT_SERVER_REPO || { echo "Creating $IOT_SERVER
 
 echo "Deploying LaFleet-ShapeStack"
 cdk deploy LaFleet-ShapeStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-ShapeStack failed, exiting" ; exit 1; }
-node ./lib/script-utils/main.js "addGetObjectVersionToShapeS3Policy" || { echo "Running addGetObjectVersionToShapeS3Policy failed, exiting" ; exit 1; }
+node ./lib/script-utils/main.js "shape" || { echo "Running shape failed, exiting" ; exit 1; }
 
 echo "Deploying LaFleet-DeviceConsumerStack"
 cdk deploy LaFleet-DeviceConsumerStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-DeviceConsumerStack failed, exiting" ; exit 1; }
