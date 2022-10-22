@@ -51,25 +51,5 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
 
-##########  Kubernetes Dashboard (Web UI)  ##########
-
-# From https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
-kubectl proxy
-K8S_DASHBOARD_LINK=http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
-
-K8S_DASHBOARD_USER=k8s-dashboard-user
-kubectl create serviceaccount $K8S_DASHBOARD_USER
-kubectl create clusterrolebinding $K8S_DASHBOARD_USER-binding --clusterrole=cluster-admin --serviceaccount=default:$K8S_DASHBOARD_USER
-
-K8S_DASHBOARD_SECRET=$(kubectl get secrets | grep "$K8S_DASHBOARD_USER" | cut -d ' ' -f1)
-K8S_DASHBOARD_TOKEN=$(kubectl describe secret $K8S_DASHBOARD_SECRET | grep "token:" | cut -d ':' -f2 | tr -d ' ')
-
-echo ""
-echo "*** NOTE - Kubernetes Dashboard (Web UI) ***"
-echo "K8S DASHBOARD LINK is $K8S_DASHBOARD_LINK"
-echo "Underlying Service Account $K8S_DASHBOARD_USER hold the Secret"
-echo "Login with  with Bearer Token $K8S_DASHBOARD_TOKEN"
-echo ""
 
 echo "FINISHED!"
