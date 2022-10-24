@@ -34,25 +34,18 @@ spec:
         app: redisearch-app
         project: lafleet
     spec:
+      volumes:
+      - name: redis-index-creator-cm
+        configMap:
+          name: redis-index-creator-cm
       containers:
-      - name: IMAGE_REPO_NAME_VALUE
-        image: IMAGE_VALUE
-        env:
-        - name: REDIS_HOST
-          value: "redisearch-service"
-        - name: REDIS_PORT
-          value: "6379"
-        resources:
-          limits:
-            memory: "50Mi"
-            cpu: "50m"
-          requests:
-            memory: "10Mi"
-            cpu: "10m"
       - name: redisearch
         image: redislabs/redisearch:latest
         ports:
         - containerPort: 6379
+        volumeMounts:
+          - name: redis-index-creator-cm
+            mountPath: /myscript
         resources:
           limits:
             memory: "500Mi"
@@ -60,12 +53,22 @@ spec:
           requests:
             memory: "25Mi"
             cpu: "50m"
-        readinessProbe:
+        livenessProbe:
           exec:
             command:
             - redis-cli
             - ping
-          initialDelaySeconds: 10
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - /myscript/createIndexes
+          initialDelaySeconds: 3
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3

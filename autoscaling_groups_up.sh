@@ -25,7 +25,5 @@ do
     sleep 5
 done
 
-# TODO: Have sidecar pod to create index on the redis instance instead of running a script
-. ./eks/create_redis_index.sh
 
 echo "FINISHED"

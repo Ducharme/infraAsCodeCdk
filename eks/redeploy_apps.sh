@@ -1,6 +1,7 @@
 #!/bin/sh
 
 REDISEARCH_YAML=./eks/redisearch_service.yml
+REDISINSIGHT_YAML=./eks/redisinsight_service.yml
 IOT_SERVER_YAML=./eks/iot-server_deployment.yml
 PERFORMANCE_YAML=./eks/redisearch-performance-analytics-py_service.yml
 DEVICE_CONSUMER_YAML=./eks/sqsdeviceconsumer-toredisearch_deployment.yml
@@ -8,7 +9,7 @@ SHAPE_CONSUMER_YAML=./eks/sqsshapeconsumer-toredisearch_deployment.yml
 MOCK_DEVICE_YAML=./eks/devices-slow_deployment.yml
 QUERY_YAML=./eks/redisearch-query_service.yml
 
-# NICE TO HAVE IF YAML CAN BE PARSED
+# NICE TO HAVE IF YAML COULD BE PARSED
 #sudo wget https://github.com/mikefarah/yq/releases/download/v4.28.1/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
 #cat eks/redisearch_service.yml | yq '.metadata[0]'
 
@@ -20,6 +21,7 @@ QUERY_YAML=./eks/redisearch-query_service.yml
 #lafleet-shape-consumers $SHAPE_CONSUMER_YAML
 #lafleet-device-consumers $DEVICE_CONSUMER_YAML
 #redisearch $REDISEARCH_YAML
+#redisinsight $REDISINSIGHT_YAML
 
 ##### Delete
 
@@ -55,6 +57,7 @@ waitForPodToStop redisearch-performance-analytics-py $PERFORMANCE_YAML
 waitForPodToStop iot-server $IOT_SERVER_YAML
 waitForPodToStop sqsshapeconsumer-toredisearch $SHAPE_CONSUMER_YAML
 waitForPodToStop sqsdeviceconsumer-toredisearch $DEVICE_CONSUMER_YAML
+waitForPodToStop redisinsight $REDISINSIGHT_YAML
 waitForPodToStop redisearch $REDISEARCH_YAML
 
 
@@ -83,14 +86,13 @@ waitForPodToRun(){
 }
 
 waitForPodToRun redisearch $REDISEARCH_YAML
-echo "Creating index in Redis"
-. ./eks/create_redis_index.sh
-
+waitForPodToRun redisinsight $REDISINSIGHT_YAML
 waitForPodToRun iot-server $IOT_SERVER_YAML
 waitForPodToRun redisearch-performance-analytics-py $PERFORMANCE_YAML
 waitForPodToRun sqsdeviceconsumer-toredisearch $DEVICE_CONSUMER_YAML
 waitForPodToRun sqsshapeconsumer-toredisearch $SHAPE_CONSUMER_YAML
 waitForPodToRun mock-iot-gps-device-awssdkv2 $MOCK_DEVICE_YAML
 waitForPodToRun redisearch-query-client $QUERY_YAML
+
 
 echo "FINISHED"
