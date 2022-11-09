@@ -395,6 +395,36 @@ echo "$SHAPE_INDEX_LOC_MATCH" | redis-cli
 FT._LIST
 ```
 
+## Prometheus
+
+Get the Prometheus server URL by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9090
+```
+
+Get the Alertmanager URL by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9093
+```
+
+Get the PushGateway URL by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9091
+```
+
+## OpenSearch dashboard
+
+Get the application URL by running these commands:
+```
+export POD_NAME=$(kubectl get pods --namespace default -l "app=opensearch-dashboards" -o jsonpath="{.items[0].metadata.name}")
+export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+
 
 ## Destroying
 

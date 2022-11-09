@@ -27,22 +27,85 @@ echo "Creating K8s cluster"
 
 . ./eks/setEnvVar.sh
 
+helm repo add stable https://charts.helm.sh/stable
+helm repo add haproxytech https://haproxytech.github.io/helm-charts
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add opensearch https://opensearch-project.github.io/helm-charts/
+helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+helm repo update
+
+
 ##########   Metrics Server   ##########
 
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-helm repo add stable https://charts.helm.sh/stable
-helm repo update
+
+##########   https://github.com/kubernetes-sigs/aws-ebs-csi-driver   ##########
+
+## https://aws.amazon.com/premiumsupport/knowledge-center/eks-persistent-storage/
+
+K8S_DIR=./tmp/k8s
+mkdir -p "$K8S_DIR"
+curl -o $K8S_DIR/pv-ebs-iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-ebs-csi-driver/v0.9.0/docs/example-iam-policy.json
+aws iam create-policy --policy-name AmazonEKS_EBS_CSI_Driver_Policy --policy-document file://$K8S_DIR/pv-ebs-iam-policy.json
+OIDC_URL=$(aws eks describe-cluster --name $CLUSTER_NAME --query "cluster.identity.oidc.issuer" --output text)
+REPLACE_BY=""
+OIDC_PATH=$(echo "$OIDC_URL" | sed "s/https:\/\//$REPLACE_BY/")
+
+cat <<EOF > $K8S_DIR/pv-ebs-trust-policy.json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:oidc-provider/$OIDC_PATH"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "$OIDC_PATH:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+aws iam create-role --role-name AmazonEKS_EBS_CSI_DriverRole --assume-role-policy-document file://$K8S_DIR/pv-ebs-trust-policy.json
+aws iam attach-role-policy --policy-arn arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:policy/AmazonEKS_EBS_CSI_Driver_Policy --role-name AmazonEKS_EBS_CSI_DriverRole
+kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
+kubectl annotate serviceaccount ebs-csi-controller-sa -n kube-system eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:role/AmazonEKS_EBS_CSI_DriverRole
+kubectl delete pods -n kube-system -l=app=ebs-csi-controller
+#helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
+
+##########   Prometheus   ##########
+
+helm install --generate-name prometheus-community/prometheus
+
+#The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster:
+#  prometheus-1666747221-server.default.svc.cluster.local
+#Get the Prometheus server URL by running these commands in the same shell:
+#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+#  kubectl --namespace default port-forward $POD_NAME 9090
+#The Prometheus alertmanager can be accessed via port 80 on the following DNS name from within your cluster:
+#  prometheus-1666747221-alertmanager.default.svc.cluster.local
+#Get the Alertmanager URL by running these commands in the same shell:
+#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
+#  kubectl --namespace default port-forward $POD_NAME 9093
+#The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
+#  prometheus-1666747221-pushgateway.default.svc.cluster.local
+#Get the PushGateway URL by running these commands in the same shell:
+#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+#  kubectl --namespace default port-forward $POD_NAME 9091
 
 ##########  HA Proxy for ingress via ELB on CDN  ##########
 
 # https://www.haproxy.com/documentation/kubernetes/latest/installation/community/aws/
 
-helm repo add haproxytech https://haproxytech.github.io/helm-charts
-helm repo update
+
 helm install kubernetes-ingress haproxytech/kubernetes-ingress \
      --create-namespace --namespace haproxy-controller \
      --set controller.service.type=LoadBalancer
-
 
 export ELB_DNS_NAME=$(kubectl --kubeconfig=$KUBECONFIG get svc -n haproxy-controller -o json | jq '.items[] | select( .spec.type == "LoadBalancer" ) | .status.loadBalancer.ingress[0].hostname' | tr -d '"')
 if [ ! -z "$ELB_DNS_NAME" ]; then
@@ -51,5 +114,10 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
 
+
+##########  OpenSearch  ##########
+
+helm install --generate-name opensearch/opensearch
+helm install --generate-name opensearch/opensearch-dashboards
 
 echo "FINISHED!"
