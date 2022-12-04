@@ -30,6 +30,7 @@ echo "Creating K8s cluster"
 helm repo add stable https://charts.helm.sh/stable
 helm repo add haproxytech https://haproxytech.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add opensearch https://opensearch-project.github.io/helm-charts/
 helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 helm repo update
@@ -78,30 +79,10 @@ kubectl annotate serviceaccount ebs-csi-controller-sa -n kube-system eks.amazona
 kubectl delete pods -n kube-system -l=app=ebs-csi-controller
 #helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
 
-##########   Prometheus   ##########
-
-helm install --generate-name prometheus-community/prometheus
-
-#The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster:
-#  prometheus-1666747221-server.default.svc.cluster.local
-#Get the Prometheus server URL by running these commands in the same shell:
-#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
-#  kubectl --namespace default port-forward $POD_NAME 9090
-#The Prometheus alertmanager can be accessed via port 80 on the following DNS name from within your cluster:
-#  prometheus-1666747221-alertmanager.default.svc.cluster.local
-#Get the Alertmanager URL by running these commands in the same shell:
-#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
-#  kubectl --namespace default port-forward $POD_NAME 9093
-#The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
-#  prometheus-1666747221-pushgateway.default.svc.cluster.local
-#Get the PushGateway URL by running these commands in the same shell:
-#  export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
-#  kubectl --namespace default port-forward $POD_NAME 9091
 
 ##########  HA Proxy for ingress via ELB on CDN  ##########
 
 # https://www.haproxy.com/documentation/kubernetes/latest/installation/community/aws/
-
 
 helm install kubernetes-ingress haproxytech/kubernetes-ingress \
      --create-namespace --namespace haproxy-controller \
@@ -114,10 +95,23 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
 
+##########   Prometheus   ##########
+
+# Look at README.md "Prometheus" for instructions to connect
+helm install --set prometheus-node-exporter.tolerations[0].operator=Exists,prometheus-node-exporter.tolerations[0].effect=NoSchedule,prometheus-node-exporter.tolerations[0].key=dedicated-compute prometheus prometheus-community/prometheus
+
 
 ##########  OpenSearch  ##########
 
-helm install --generate-name opensearch/opensearch
-helm install --generate-name opensearch/opensearch-dashboards
+# Look at README.md "OpenSearch dashboard" for instructions to connect
+helm install opensearch opensearch/opensearch
+helm install opensearch-dashboards opensearch/opensearch-dashboards
+
+##########  Grafana  ##########
+
+# Look at README.md "Grafana" for instructions to get the password and connect
+helm install grafana grafana/grafana
+
+. ./eks/import_grafana_dashboards.sh
 
 echo "FINISHED!"

@@ -29,7 +29,7 @@ sed -i 's@STANDARD_INSTANCE_TYPE@'"$STANDARD_INSTANCE_TYPE"'@g' $VALUES_YAML
 sed -i 's@COMPUTE_INSTANCE_TYPE@'"$COMPUTE_INSTANCE_TYPE"'@g' $VALUES_YAML
 sed -i 's@USE_SPOT_INSTANCES@'"$USE_SPOT_INSTANCES"'@g' $VALUES_YAML
 
-
+export ES_DOMAIN_NAME="$CLUSTER_NAME-logging"
 eksctl create cluster -f ./eksctl/lafleet.yaml --auto-kubeconfig
 eksctl utils write-kubeconfig --cluster=lafleet-cluster --kubeconfig=/home/$USER/.kube/eksctl/clusters/lafleet-cluster
 
@@ -38,3 +38,4 @@ eksctl utils write-kubeconfig --cluster=lafleet-cluster --kubeconfig=/home/$USER
 eksctl utils update-coredns --cluster $CLUSTER_NAME
 eksctl utils update-kube-proxy --cluster $CLUSTER_NAME --approve
 eksctl utils update-aws-node --cluster $CLUSTER_NAME --approve
+
