@@ -39,8 +39,8 @@ managedNodeGroups:
   instanceType: STANDARD_INSTANCE_TYPE
   instancePrefix: lf-t3
   minSize: 0
-  desiredCapacity: 3
-  maxSize: 4
+  desiredCapacity: 6
+  maxSize: 6
   volumeSize: 20
   volumeType: gp3
   maxPodsPerNode: 30

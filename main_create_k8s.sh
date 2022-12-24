@@ -95,22 +95,32 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
 
+##########   Fluent Bit   ##########
+
+# From https://docs.fluentbit.io/manual/v/1.8/installation/kubernetes#container-runtime-interface-cri-parser
+$ kubectl create namespace logging
+$ kubectl create -f eks/fluentbit_basics.yaml
+$ kubectl create -f eks/fluentbit_cm.yaml
+$ kubectl create -f eks/fluentbit_ds.yaml
+
+
 ##########   Prometheus   ##########
 
 # Look at README.md "Prometheus" for instructions to connect
-helm install --set prometheus-node-exporter.tolerations[0].operator=Exists,prometheus-node-exporter.tolerations[0].effect=NoSchedule,prometheus-node-exporter.tolerations[0].key=dedicated-compute prometheus prometheus-community/prometheus
+helm install --set prometheus-node-exporter.tolerations[0].operator=Exists,prometheus-node-exporter.tolerations[0].effect=NoSchedule,prometheus-node-exporter.tolerations[0].key=dedicated-compute \
+  --set prometheus-node-exporter.priorityClassName=system-node-critical prometheus prometheus-community/prometheus
 
 
 ##########  OpenSearch  ##########
 
 # Look at README.md "OpenSearch dashboard" for instructions to connect
-helm install opensearch opensearch/opensearch
+helm install opensearch opensearch/opensearch --set singleNode=true
 helm install opensearch-dashboards opensearch/opensearch-dashboards
 
 ##########  Grafana  ##########
 
 # Look at README.md "Grafana" for instructions to get the password and connect
-helm install grafana grafana/grafana
+helm install --set persistence.enabled=true --set persistence.size=1Gi grafana grafana/grafana
 
 . ./eks/import_grafana_dashboards.sh
 

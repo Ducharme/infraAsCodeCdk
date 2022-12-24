@@ -2,12 +2,13 @@
 
 GF_PW=$(kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo)
 GF_POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
-#kubectl --namespace default port-forward $GF_POD_NAME 3000 &
+kubectl --namespace default port-forward $GF_POD_NAME 3000 &
 
 GF_HOST="http://localhost:3000"
 GF_CREDS="admin:$GF_PW"
 GF_DS="prometheus"
 
+## TODO: Configure grafana datasources via helm values
 curl "http://admin:$GF_PW@localhost:3000/api/datasources" -X POST -H "Accept: application/json" -H "Content-Type: application/json" \
     --data-binary '{ "name":"prometheus", "type":"prometheus", "access":"proxy", "url":"http://prometheus-server:80", "basicAuth":false, "withCredentials":false, "isDefault":true }'
 echo ""
@@ -15,22 +16,13 @@ echo ""
 GF_PM_UID=$(curl -s -k "http://admin:$GF_PW@localhost:3000/api/datasources" -X GET -H "Accept: application/json" -H "Content-Type: application/json" | jq '.[] | select (.name == "prometheus") | .uid' | tr -d '"')
 echo "Grafana uid for Prometheus is $GF_PM_UID"
 
-#curl -s -k "http://admin:$GF_PW@localhost:3000/api/dashboards/db" -X POST -H "Accept: application/json" -H "Content-Type: application/json" \
-#    -d '{ "dashboard": { "id": null, "uid": null, "title": "Overview", "tags": [ "templated" ], "timezone": "browser", "schemaVersion": 16, "version": 0, "refresh": "15s" }, "folderId": 0, "message": "Creation", "overwrite": false }'
-#echo ""
-
+## TODO: Configure grafana dashboard to import
 GF_DIR=./tmp/grafana/dashboard
 mkdir -p $GF_DIR
 ARR="12740 15055 13646 3662 6417 7249"
 echo "$ARR" | tr ' ' '\n' | while read item; do
   echo -n "Processing $item: "
   j=$(curl -s -k -u "$GF_CREDS" $GF_HOST/api/gnet/dashboards/$item | jq .json > $GF_DIR/$item.json)
-
-  #curl -s -k -u "$GF_CREDS" -XPOST -H "Accept: application/json" \
-  #  -H "Content-Type: application/json" -d "{\"dashboard\":$j,\"overwrite\":true, \"inputs\":[{\"name\":\"Overview\",\"type\":\"datasource\", \"pluginId\":\"prometheus\",\"value\":\"$GF_DS\"}]}" \
-  #  $GF_HOST/api/dashboards/import; echo ""
-  
-  #curl -s -k -X POST -H "Content-Type: application/json" -d "{\"dashboard\":$(cat ./tmp/grafana/dashboard/$item.json)}" http://admin:$GF_PW@localhost:3000/api/dashboards/db
 
   GF_IMPORTED_ID=$(cat $GF_DIR/$item.json | jq ".id" | tr -d '"')
   echo "Imported id for Dashboard is $GF_IMPORTED_ID"
