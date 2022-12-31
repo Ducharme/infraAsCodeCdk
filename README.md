@@ -101,6 +101,20 @@ sudo apt install -y jq
 or follow [Download jq](https://stedolan.github.io/jq/download/)
 
 
+## yq
+
+yq a lightweight and portable command-line YAML processor
+
+Install by running
+```
+snap install yq
+```
+or follow [Download yq](https://github.com/mikefarah/yq#wget)
+```
+wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
+```
+
+
 ## zip unzip
 
 Install by running
@@ -424,9 +438,10 @@ Get the application URL by running these commands:
 ```
 export POD_NAME=$(kubectl get pods --namespace default -l "app=opensearch-dashboards" -o jsonpath="{.items[0].metadata.name}")
 export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-echo "Visit http://127.0.0.1:8080 to use your application"
 kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
 ```
+Visit http://127.0.0.1:8080 to use OpenSearch (default username/password are admin/admin)
+
 
 ## Grafana
 
@@ -441,6 +456,7 @@ Get the Grafana URL to visit by running these commands in the same shell:
 export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
 kubectl --namespace default port-forward $POD_NAME 3000
 ```
+Visit http://127.0.0.1:3000 to use Grafana (see first command line for username/password)
 
 
 ## Destroying
