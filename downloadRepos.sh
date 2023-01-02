@@ -23,6 +23,7 @@ downloadRepo(){
 
 
 downloadRepo $DEVICE_REPO
+downloadRepo $IOT_SERVER_REPO
 downloadRepo $DEVICE_CONSUMER_REPO
 downloadRepo $SHAPE_CONSUMER_REPO
 downloadRepo $REACT_REPO

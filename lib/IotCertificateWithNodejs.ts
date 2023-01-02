@@ -8,16 +8,17 @@ import * as njs from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 
 
-export interface IotCertificateWithNodejsProps {
+export interface IotCertificateProps {
   readonly object_store_bucket_name : string;
+  readonly thingName : string;
 }
 
-export class IotCertificateWithNodejs extends Construct {
+export class IotCertificate extends Construct {
 
   readonly certificateId : string;
   readonly certificateArn : string;
 
-  constructor(scope: Construct, id: string, props: IotCertificateWithNodejsProps) {
+  constructor(scope: Construct, id: string, props: IotCertificateProps) {
     super(scope, id);
 
     const lambdaExecutionRole = new iam.Role(this, 'LambdaExecutionRole', {
@@ -64,7 +65,7 @@ export class IotCertificateWithNodejs extends Construct {
       resources: s3res
     }));
 
-    var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayerIotCertificate", {
+    var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayer", {
       compatibleRuntimes: [
         lambda.Runtime.NODEJS_16_X,
       ],
@@ -91,7 +92,8 @@ export class IotCertificateWithNodejs extends Construct {
       environment: {
         object_store_bucket_name: props.object_store_bucket_name,
         accountId: Stack.of(this).account,
-        region: Stack.of(this).region
+        region: Stack.of(this).region,
+        thingName: props.thingName
       },
     });
 
@@ -100,26 +102,23 @@ export class IotCertificateWithNodejs extends Construct {
       logRetention: logs.RetentionDays.ONE_DAY,
     });
 
-    const lambdaCustomResource = new CfnCustomResource(
-      this,
+    const lambdaCustomResource = new CfnCustomResource(this,
       'lambdaCustomResourceCfn',
-      {
-        serviceToken: lambdaProvider.serviceToken,
-      },
+      { serviceToken: lambdaProvider.serviceToken }
     );
 
     // https://github.com/aws/aws-cdk/issues/17613
     const outputIotCertificateId = new CfnOutput(this, "CustomResource::Output::CertificateId", {
       value: lambdaCustomResource.getAtt('certificateId').toString(),
       description: '',
-      exportName: 'Iot-CertificateId',
+      exportName: 'Iot-CertificateId-' + props.thingName,
     });
     this.certificateId = outputIotCertificateId.value;
 
     const outputIotCertificateArn = new CfnOutput(this, "CustomResource::Output::CertificateArn", {
       value: lambdaCustomResource.getAtt('certificateArn').toString(),
       description: '',
-      exportName: 'Iot-CertificateArn',
+      exportName: 'Iot-CertificateArn-' + props.thingName,
     });
     this.certificateArn = outputIotCertificateArn.value;
   }

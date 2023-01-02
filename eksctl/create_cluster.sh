@@ -14,7 +14,7 @@ cp $TEMPLATE_YAML $VALUES_YAML
 # Recommended "c6i.large" with 2 vCPU & 4 GiB Memory (29 pods) for COMPUTE_INSTANCE_TYPE
 COMPUTE_INSTANCE_TYPE=c6i.large
 # Recommended "t3.medium" with 2 vCPU & 4 GiB Memory (17 pods) for STANDARD_INSTANCE_TYPE
-STANDARD_INSTANCE_TYPE=t3.medium
+STANDARD_INSTANCE_TYPE=c6i.large
 RES_DEVICE_SQS_QUEUE=arn:aws:sqs:$AWS_REGION_VALUE:$AWS_ACCOUNT_ID_VALUE:$DEVICE_SQS_QUEUE_NAME
 RES_SHAPE_SQS_QUEUE=arn:aws:sqs:$AWS_REGION_VALUE:$AWS_ACCOUNT_ID_VALUE:$SHAPE_SQS_QUEUE_NAME
 RES_S3_SHAPE_REPO=arn:aws:s3:::$S3_SHAPE_REPO/*
@@ -29,7 +29,7 @@ sed -i 's@STANDARD_INSTANCE_TYPE@'"$STANDARD_INSTANCE_TYPE"'@g' $VALUES_YAML
 sed -i 's@COMPUTE_INSTANCE_TYPE@'"$COMPUTE_INSTANCE_TYPE"'@g' $VALUES_YAML
 sed -i 's@USE_SPOT_INSTANCES@'"$USE_SPOT_INSTANCES"'@g' $VALUES_YAML
 
-
+export ES_DOMAIN_NAME="$CLUSTER_NAME-logging"
 eksctl create cluster -f ./eksctl/lafleet.yaml --auto-kubeconfig
 eksctl utils write-kubeconfig --cluster=lafleet-cluster --kubeconfig=/home/$USER/.kube/eksctl/clusters/lafleet-cluster
 
@@ -38,3 +38,4 @@ eksctl utils write-kubeconfig --cluster=lafleet-cluster --kubeconfig=/home/$USER
 eksctl utils update-coredns --cluster $CLUSTER_NAME
 eksctl utils update-kube-proxy --cluster $CLUSTER_NAME --approve
 eksctl utils update-aws-node --cluster $CLUSTER_NAME --approve
+

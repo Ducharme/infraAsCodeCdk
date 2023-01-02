@@ -8,7 +8,6 @@ import * as cps from 'aws-cdk-lib/pipelines';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
-import { CfnBackupPlan } from 'aws-cdk-lib/aws-backup';
 
 
 export interface CiCdProps {

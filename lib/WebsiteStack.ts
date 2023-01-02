@@ -107,10 +107,12 @@ export class WebsiteStack extends Stack {
       
     // Add Cloudfront invalidation permissions to the project
     const distributionArn = `arn:aws:cloudfront::${awsAccountId}:distribution/${reactCdn.distribution.distributionId}`;
-    cicd.codeBuildProject.addToRolePolicy(new iam.PolicyStatement({
-        resources: [distributionArn],
-        actions: ['cloudfront:CreateInvalidation']
-    }));
+    const invalidatePolicy = new iam.PolicyStatement({
+      resources: [distributionArn],
+      actions: ['cloudfront:CreateInvalidation']
+    });
+    cicd.codeBuildProject.addToRolePolicy(invalidatePolicy);
+    cicd.codePipeline.addToRolePolicy(invalidatePolicy);
 
     // TODO: Might have race condition with s3 env config file replication if build is faster than cdk to copy
 

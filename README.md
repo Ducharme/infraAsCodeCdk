@@ -101,6 +101,20 @@ sudo apt install -y jq
 or follow [Download jq](https://stedolan.github.io/jq/download/)
 
 
+## yq
+
+yq a lightweight and portable command-line YAML processor
+
+Install by running
+```
+snap install yq
+```
+or follow [Download yq](https://github.com/mikefarah/yq#wget)
+```
+wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
+```
+
+
 ## zip unzip
 
 Install by running
@@ -141,8 +155,8 @@ npm install -g aws-cdk@latest
 
 ## eksctl
 
-https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
-https://eksctl.io/introduction/#installation
+[AWS EKS userguide eksctl](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html)
+ and [eksctl introduction/installation](https://eksctl.io/introduction/#installation)
 ```
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin
@@ -195,6 +209,22 @@ Run docker without admin rights
 [Docker engine postinstall ubuntu](https://docs.docker.com/engine/install/linux-postinstall/)
 
 
+## Visual Code (optional for development)
+
+[Download Visual Studio Code deb file](https://code.visualstudio.com/download) then follow [Debian and Ubuntu based distributions](https://code.visualstudio.com/docs/setup/linux#_debian-and-ubuntu-based-distributions)
+```
+sudo apt install ./<file>.deb
+```
+
+
+## Google Chrome (optional for development)
+
+[Download 64 bit .deb (For Debian/Ubuntu)](https://www.google.com/chrome/) then follow execute
+```
+sudo apt install ./<file>.deb
+```
+
+
 # How To Deploy
 
 
@@ -222,7 +252,7 @@ Run below script (tested with Lubuntu 20.04 default terminal)
 npm install
 cdk bootstrap
 sh ./run_synth.sh
-sh ./main_create.sh
+sh ./main_create_core.sh
 ```
 Note: It is recommended to have FORCE=TRUE set
 
@@ -268,17 +298,27 @@ Once completed you should see the map with CloudFront.
 * CloudFront Distribution & OAI
 * CloudWatch Log Groups
 * IAM/roles with inline policies
-* CodeCommit (5x)
-* CodeBuild (5x)
-* CodePipeline (5x)
-* ECR (4x)
+* CodeCommit (7x)
+* CodeBuild (7x)
+* CodePipeline (7x)
+* ECR (6x)
 * EC2/Instances
 * EC2/LoadBalancer
 * EC2/Auto Scaling Groups
 * VPC/NAT gateways
 * EKS cluster
+* API Gateway v2 (HTTP)
 * Lambda/Functions
 * Lambda/Layers
+
+## CodeBuild Repositories (ECR Repository)
+
+* mockIotGpsDeviceAwsSdkV2: Emulated IoT GPS Device based on aws-iot-device-sdk-v2 (mock-iot-gps-device-awssdkv2)
+* iotServer: IoT Server based on aws-iot-device-sdk-v2 (iot-server)
+* sqsDeviceConsumerToRedisearch: SQS Device Consumer writing to Redisearch in TypeScript (sqsdeviceconsumer-toredisearch)
+* sqsShapeConsumerToRedisearch: SQS Shape Consumer writing to Redisearch in TypeScript (sqsshapeconsumer-toredisearch)
+* redisearchQueryClient: Service to query Redisearch in TypeScript (redisearch-query-client)
+* redisPerformanceAnalyticsPy: Redis performance analytics in python3 (redisearch-performance-analytics-py)
 
 
 # Playing with Kubernetes
@@ -366,7 +406,7 @@ FT.SEARCH topic-lnglat-idx "@topic:lafleet/devices/location/+/streaming @lnglat:
 
 ## To play locally with redisearch
 
-Creating the two INDEX
+Creating INDEX
 ```
 sudo docker run --name redisearch-cli --rm -it -d -p 6379:6379 redislabs/redisearch:latest
 
@@ -385,12 +425,61 @@ echo "$SHAPE_INDEX_LOC_MATCH" | redis-cli
 FT._LIST
 ```
 
+## Prometheus
+
+The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster: "prometheus-server.monitoring.svc.cluster.local". 
+Get the Prometheus server URL by running these commands in the same shell then go to http://localhost:9090/graph or http://localhost:9090/metrics
+```
+export POD_NAME=$(kubectl get pods --namespace monitoring -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace monitoring port-forward $POD_NAME 9090
+```
+
+The Prometheus Alertmanager can be accessed via port 80 on the following DNS name from within your cluster: "prometheus-alertmanager.monitoring.svc.cluster.local". 
+Get the Alertmanager URL by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace monitoring -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace monitoring port-forward $POD_NAME 9093
+```
+
+The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster: "prometheus-pushgateway.monitoring.svc.cluster.local". 
+Get the PushGateway URL by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace monitoring -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace monitoring port-forward $POD_NAME 9091
+```
+
+## OpenSearch dashboard
+
+Get the application URL by running these commands:
+```
+export POD_NAME=$(kubectl get pods --namespace logging -l "app=opensearch-dashboards" -o jsonpath="{.items[0].metadata.name}")
+export CONTAINER_PORT=$(kubectl get pod --namespace logging $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+kubectl --namespace logging port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+Visit http://127.0.0.1:8080 to use OpenSearch (default username/password are admin/admin)
+
+
+## Grafana
+
+Get your 'admin' user password by running:
+```
+kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+```
+
+The Grafana server can be accessed via port 80 on the following DNS name from within your cluster: "grafana.monitoring.svc.cluster.local". 
+Get the Grafana URL to visit by running these commands in the same shell:
+```
+export POD_NAME=$(kubectl get pods --namespace monitoring -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace monitoring port-forward $POD_NAME 3000
+```
+Visit http://127.0.0.1:3000 to use Grafana (see first command line for username/password)
+
 
 ## Destroying
 
 Execute
 ```
-sh ./main_delete.sh
+sh ./main_delete_all.sh
 ```
 Note: It is recommended to have FORCE=TRUE
 

@@ -46,16 +46,28 @@ if [ ! -z "$QS_STACK" ]; then
     cdk destroy LaFleet-QueryStack $CDK_FORCE || { echo "Destroying LaFleet-QueryStack failed, exiting" ; exit 1; }
 fi
 
-CS_STACK=$(echo "$STACKS" | grep "LaFleet-ShapeConsumerStack")
-if [ ! -z "$CS_STACK" ]; then
+SC_STACK=$(echo "$STACKS" | grep "LaFleet-ShapeConsumerStack")
+if [ ! -z "$SC_STACK" ]; then
     echo "Destroying LaFleet-ShapeConsumerStack"
     cdk destroy LaFleet-ShapeConsumerStack $CDK_FORCE || { echo "Destroying LaFleet-ShapeConsumerStack failed, exiting" ; exit 1; }
 fi
 
-CS_STACK=$(echo "$STACKS" | grep "LaFleet-DeviceConsumerStack")
-if [ ! -z "$CS_STACK" ]; then
+DC_STACK=$(echo "$STACKS" | grep "LaFleet-DeviceConsumerStack")
+if [ ! -z "$DC_STACK" ]; then
     echo "Destroying LaFleet-DeviceConsumerStack"
     cdk destroy LaFleet-DeviceConsumerStack $CDK_FORCE || { echo "Destroying LaFleet-DeviceConsumerStack failed, exiting" ; exit 1; }
+fi
+
+SS_STACK=$(echo "$STACKS" | grep "LaFleet-ShapeStack")
+if [ ! -z "$SS_STACK" ]; then
+    echo "Destroying LaFleet-ShapeStack"
+    cdk destroy LaFleet-ShapeStack $CDK_FORCE || { echo "Destroying LaFleet-ShapeStack failed, exiting" ; exit 1; }
+fi
+
+IS_STACK=$(echo "$STACKS" | grep "LaFleet-IotServerStack")
+if [ ! -z "$IS_STACK" ]; then
+    echo "Destroying LaFleet-IotServerStack"
+    cdk destroy LaFleet-IotServerStack $CDK_FORCE || { echo "Destroying LaFleet-IotServerStack failed, exiting" ; exit 1; }
 fi
 
 DS_STACK=$(echo "$STACKS" | grep "LaFleet-DeviceStack")

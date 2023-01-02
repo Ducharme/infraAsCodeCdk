@@ -47,9 +47,9 @@ export class DeviceConsumerStack extends Stack {
       throw new Error("Environement variable S3_CODEPIPELINE_ARTIFACTS is not defined");
     }
 
-    const thingTopic = process.env.THING_TOPIC;
+    const thingTopic = process.env.STREAMING_LOCATION_TOPIC;
     if (!thingTopic) {
-      throw new Error("Environement variable THING_TOPIC is not defined");
+      throw new Error("Environement variable STREAMING_LOCATION_TOPIC is not defined");
     }
 
     var cicd = new CiCd(this, "CICD-" + repoName, {

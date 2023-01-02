@@ -23,10 +23,9 @@ export class ReactCdn extends Construct {
       throw new Error("Environement variable AWS_REGION_VALUE is not defined");
     }
     
-    // Creates a distribution from an S3 bucket.
     const errorPagePath = "/error.html";
     const errorMinTtl = Duration.seconds(300);
-
+    // Creates a distribution from an S3 bucket.
     this.distribution = new cdn.Distribution(this, 's3ReactDist', {
         defaultBehavior: {
             origin: new cfo.S3Origin(props.react_web_bucket), // s3origin,

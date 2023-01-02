@@ -1,22 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lafleet-devices-slow
+  name: lafleet-iot-server
   namespace: default
   labels:
-    app: devices
+    app: iotServer
     project: lafleet
-    speed: slow
 spec:
   selector:
     matchLabels:
-      app: devices
-  replicas: 2
+      app: iotServer
+  replicas: 1
   template:
     metadata:
-      name: devices
+      name: iotServer
       labels:
-        app: devices
+        app: iotServer
     spec:
       containers:
       - name: IMAGE_REPO_NAME_VALUE
@@ -24,16 +23,10 @@ spec:
         env:
         - name: ENDPOINT
           value: "IOT_ENDPOINT"
-        - name: STREAMING_LOCATION_TOPIC
-          value: "STREAMING_LOCATION_TOPIC_VALUE"
         - name: STREAMID_REQUEST_TOPIC
           value: "STREAMID_REQUEST_TOPIC_VALUE"
         - name: STREAMID_REPLY_TOPIC
           value: "STREAMID_REPLY_TOPIC_VALUE"
-        - name: INTERVAL
-          value: "10000"
-        - name: COUNT
-          value: "0"
         - name: CA_FILE
           value: "./certs/root-ca.crt"
         - name: CERT_FILE

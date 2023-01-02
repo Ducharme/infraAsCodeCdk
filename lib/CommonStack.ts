@@ -1,6 +1,7 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { SqsQueue } from './SqsQueue';
 
@@ -34,6 +35,11 @@ export class CommonStack extends Stack {
     const codepipeline_artifact_bucket_name = process.env.S3_CODEPIPELINE_ARTIFACTS;
     if (!codepipeline_artifact_bucket_name) {
       throw new Error("Environement variable S3_CODEPIPELINE_ARTIFACTS is not defined");
+    }
+
+    const streamingLocationTopic = process.env.STREAMING_LOCATION_TOPIC;
+    if (!streamingLocationTopic) {
+      throw new Error("Environement variable STREAMING_LOCATION_TOPIC is not defined");
     }
 
     
@@ -72,7 +78,35 @@ export class CommonStack extends Stack {
 
     const sqsDeviceQueueName : string = projectName + "-device-messages";
     this.deviceSqsQueue = new SqsQueue(this, "SqsQueue-" + sqsDeviceQueueName, { sqsQueueName: sqsDeviceQueueName, label: "device" });
-    this.deviceSqsQueue.sqsQueue.grantSendMessages(new iam.ServicePrincipal('iot.amazonaws.com'))
+    this.deviceSqsQueue.sqsQueue.grantSendMessages(new iam.ServicePrincipal('iot.amazonaws.com'));
+
+
+    /********** IOT ENDPOINT **********/
+
+    const getIoTEndpoint = new cr.AwsCustomResource(this, 'IoTEndpoint', {
+      onCreate: {
+        service: 'Iot',
+        action: 'describeEndpoint',
+        physicalResourceId: cr.PhysicalResourceId.fromResponse('endpointAddress'),
+        parameters: {
+          "endpointType": "iot:Data-ATS"
+        }
+      },
+      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({resources: cr.AwsCustomResourcePolicy.ANY_RESOURCE})
+    });
+
+    const iotEp = getIoTEndpoint.getResponseField('endpointAddress')
+    const outputIotEndpoint = new CfnOutput(this, "EndpointAddress", {
+      value: iotEp.toString(),
+      description: '',
+      exportName: 'Iot-EndpointAddress',
+    });
+
+    const outputThingTopic = new CfnOutput(this, "ThingTopic", {
+      value: streamingLocationTopic,
+      description: '',
+      exportName: 'Iot-ThingTopic',
+    });
 
   }
 }
