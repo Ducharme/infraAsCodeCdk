@@ -79,6 +79,9 @@ kubectl annotate serviceaccount ebs-csi-controller-sa -n kube-system eks.amazona
 kubectl delete pods -n kube-system -l=app=ebs-csi-controller
 #helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
 
+kubectl create namespace logging
+kubectl create namespace monitoring
+
 
 ##########  HA Proxy for ingress via ELB on CDN  ##########
 
@@ -95,33 +98,42 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
 
-##########   Fluent Bit   ##########
-
-# From https://docs.fluentbit.io/manual/v/1.8/installation/kubernetes#container-runtime-interface-cri-parser
-$ kubectl create namespace logging
-$ kubectl create -f eks/fluentbit_basics.yaml
-$ kubectl create -f eks/fluentbit_cm.yaml
-$ kubectl create -f eks/fluentbit_ds.yaml
-
 
 ##########   Prometheus   ##########
 
 # Look at README.md "Prometheus" for instructions to connect
-helm install --set prometheus-node-exporter.tolerations[0].operator=Exists,prometheus-node-exporter.tolerations[0].effect=NoSchedule,prometheus-node-exporter.tolerations[0].key=dedicated-compute \
-  --set prometheus-node-exporter.priorityClassName=system-node-critical prometheus prometheus-community/prometheus
+helm install -f eks/prometheus_values.yaml --namespace monitoring prometheus prometheus-community/prometheus
 
 
 ##########  OpenSearch  ##########
 
 # Look at README.md "OpenSearch dashboard" for instructions to connect
-helm install opensearch opensearch/opensearch --set singleNode=true
-helm install opensearch-dashboards opensearch/opensearch-dashboards
+helm install opensearch opensearch/opensearch --namespace logging --set singleNode=true
+helm install opensearch-dashboards opensearch/opensearch-dashboards --namespace logging
+
+OS_POD_NAME=logging/opensearch-cluster-master-0
+OS_CERT_DIR=./tmp/certs/opensearch
+mkdir -p tmp/certs/opensearch
+kubectl cp $OS_POD_NAME:config/esnode-key.pem $OS_CERT_DIR/esnode-key.pem
+kubectl cp $OS_POD_NAME:config/esnode.pem $OS_CERT_DIR/esnode.pem
+kubectl cp $OS_POD_NAME:config/kirk-key.pem $OS_CERT_DIR/kirk-key.pem
+kubectl cp $OS_POD_NAME:config/kirk.pem $OS_CERT_DIR/kirk.pem
+kubectl cp $OS_POD_NAME:config/root-ca.pem $OS_CERT_DIR/root-ca.pem
+
+kubectl create secret generic fluentbit-tls2 -n logging --from-file=root-ca.pem=$OS_CERT_DIR/root-ca.pem \
+  --from-file=esnode-key.pem=$OS_CERT_DIR/esnode-key.pem --from-file=esnode.pem=$OS_CERT_DIR/esnode.pem \
+  --from-file=kirk-key.pem=$OS_CERT_DIR/kirk-key.pem --from-file=kirk.pem=$OS_CERT_DIR/kirk.pem
+
 
 ##########  Grafana  ##########
 
 # Look at README.md "Grafana" for instructions to get the password and connect
-helm install --set persistence.enabled=true --set persistence.size=1Gi grafana grafana/grafana
+helm install --set persistence.enabled=true --set persistence.size=1Gi --namespace monitoring \
+  -f eks/grafana_values.yaml grafana grafana/grafana
 
-. ./eks/import_grafana_dashboards.sh
+
+##########   Fluent Bit   ##########
+
+kubectl create -f eks/fluentbit.yaml
 
 echo "FINISHED!"

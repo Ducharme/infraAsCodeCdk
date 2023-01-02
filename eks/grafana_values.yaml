@@ -1,0 +1,45 @@
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: prometheus
+      type: prometheus
+      url: http://prometheus-server:80
+      access: proxy
+      isDefault: true
+      basicAuth: false
+      withCredentials: false
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    kubernetes-monitoring:
+      gnetId: 12740
+      datasource: prometheus
+    monitor-pod-cpu-and-memory-usage:
+      gnetId: 15055
+      datasource: prometheus
+    kubernetes-persistent-volumes:
+      gnetId: 13646
+      datasource: prometheus
+    prometheus-2-0-overview:
+      gnetId: 3662
+      datasource: prometheus
+    kubernetes-cluster-prometheus:
+      gnetId: 6417
+      datasource: prometheus
+    kubernetes-cluster:
+      gnetId: 7249
+      datasource: prometheus
