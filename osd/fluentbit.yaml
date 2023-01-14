@@ -57,7 +57,7 @@ data:
         Name              tail
         Tag               kube.*
         Path              /var/log/containers/*.log
-        Exclude_Path      /var/log/containers/fluent-bit-*, /var/log/containers/kube-proxy-*, /var/log/containers/prometheus-*, /var/log/containers/opensearch-*, /var/log/containers/aws-node-*, /var/log/containers/ebs-csi-*, /var/log/containers/dashboard-metrics-scraper-*, /var/log/containers/kubernetes-ingress-*, /var/log/containers/kubernetes-dashboard-*
+        Exclude_Path      /var/log/containers/fluent-bit-*, /var/log/containers/kube-proxy-*, /var/log/containers/prometheus-*, /var/log/containers/opensearch-*, /var/log/containers/grafana-*, /var/log/containers/aws-node-*, /var/log/containers/ebs-csi-*, /var/log/containers/dashboard-metrics-scraper-*, /var/log/containers/kubernetes-ingress-*, /var/log/containers/kubernetes-dashboard-*, /var/log/containers/coredns-*, /var/log/containers/metrics-server-*
         Parser            docker
         DB                /var/log/flb_kube.db
         Mem_Buf_Limit     10MB
@@ -90,12 +90,9 @@ data:
         TLS.crt_file    /fluent-bit/ssl/kirk.pem
         TLS.key_file    /fluent-bit/ssl/kirk-key.pem
         Suppress_Type_Name On
+        Replace_Dots    On
+        Trace_Error     On
         Path            _bulk
-
-
-    [OUTPUT]
-        Name             stdout
-        Match            *
 
   parsers.conf: |
     [PARSER]
@@ -180,7 +177,7 @@ spec:
     spec:
       containers:
       - name: fluent-bit
-        image: fluent/fluent-bit:2.0.6
+        image: fluent/fluent-bit:2.0.8
         imagePullPolicy: Always
         ports:
           - containerPort: 2020

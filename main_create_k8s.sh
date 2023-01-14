@@ -32,7 +32,6 @@ helm repo add haproxytech https://haproxytech.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add opensearch https://opensearch-project.github.io/helm-charts/
-helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 helm repo update
 
 
@@ -40,47 +39,10 @@ helm repo update
 
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
-##########   https://github.com/kubernetes-sigs/aws-ebs-csi-driver   ##########
 
-## https://aws.amazon.com/premiumsupport/knowledge-center/eks-persistent-storage/
+##########   Prometheus, OpenSearch, fluentbit, Grafana   ##########
 
-K8S_DIR=./tmp/k8s
-mkdir -p "$K8S_DIR"
-curl -o $K8S_DIR/pv-ebs-iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-ebs-csi-driver/v0.9.0/docs/example-iam-policy.json
-aws iam create-policy --policy-name AmazonEKS_EBS_CSI_Driver_Policy --policy-document file://$K8S_DIR/pv-ebs-iam-policy.json
-OIDC_URL=$(aws eks describe-cluster --name $CLUSTER_NAME --query "cluster.identity.oidc.issuer" --output text)
-REPLACE_BY=""
-OIDC_PATH=$(echo "$OIDC_URL" | sed "s/https:\/\//$REPLACE_BY/")
-
-cat <<EOF > $K8S_DIR/pv-ebs-trust-policy.json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:oidc-provider/$OIDC_PATH"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "$OIDC_PATH:sub": "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-        }
-      }
-    }
-  ]
-}
-EOF
-
-aws iam create-role --role-name AmazonEKS_EBS_CSI_DriverRole --assume-role-policy-document file://$K8S_DIR/pv-ebs-trust-policy.json
-aws iam attach-role-policy --policy-arn arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:policy/AmazonEKS_EBS_CSI_Driver_Policy --role-name AmazonEKS_EBS_CSI_DriverRole
-kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
-kubectl annotate serviceaccount ebs-csi-controller-sa -n kube-system eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:role/AmazonEKS_EBS_CSI_DriverRole
-kubectl delete pods -n kube-system -l=app=ebs-csi-controller
-#helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
-
-kubectl create namespace logging
-kubectl create namespace monitoring
+. ./osd/install.sh
 
 
 ##########  HA Proxy for ingress via ELB on CDN  ##########
@@ -97,43 +59,3 @@ if [ ! -z "$ELB_DNS_NAME" ]; then
     cdk deploy LaFleet-WebsiteStack $CDK_APPROVAL $SDK_APPROVAL || { echo "Deploying LaFleet-WebsiteStack failed, exiting" ; exit 1; }
     node ./lib/script-utils/main.js $REACT_REPO || { echo "Creating $REACT_REPO config failed, exiting" ; exit 1; }
 fi
-
-
-##########   Prometheus   ##########
-
-# Look at README.md "Prometheus" for instructions to connect
-helm install -f eks/prometheus_values.yaml --namespace monitoring prometheus prometheus-community/prometheus
-
-
-##########  OpenSearch  ##########
-
-# Look at README.md "OpenSearch dashboard" for instructions to connect
-helm install opensearch opensearch/opensearch --namespace logging --set singleNode=true
-helm install opensearch-dashboards opensearch/opensearch-dashboards --namespace logging
-
-OS_POD_NAME=logging/opensearch-cluster-master-0
-OS_CERT_DIR=./tmp/certs/opensearch
-mkdir -p tmp/certs/opensearch
-kubectl cp $OS_POD_NAME:config/esnode-key.pem $OS_CERT_DIR/esnode-key.pem
-kubectl cp $OS_POD_NAME:config/esnode.pem $OS_CERT_DIR/esnode.pem
-kubectl cp $OS_POD_NAME:config/kirk-key.pem $OS_CERT_DIR/kirk-key.pem
-kubectl cp $OS_POD_NAME:config/kirk.pem $OS_CERT_DIR/kirk.pem
-kubectl cp $OS_POD_NAME:config/root-ca.pem $OS_CERT_DIR/root-ca.pem
-
-kubectl create secret generic fluentbit-tls2 -n logging --from-file=root-ca.pem=$OS_CERT_DIR/root-ca.pem \
-  --from-file=esnode-key.pem=$OS_CERT_DIR/esnode-key.pem --from-file=esnode.pem=$OS_CERT_DIR/esnode.pem \
-  --from-file=kirk-key.pem=$OS_CERT_DIR/kirk-key.pem --from-file=kirk.pem=$OS_CERT_DIR/kirk.pem
-
-
-##########  Grafana  ##########
-
-# Look at README.md "Grafana" for instructions to get the password and connect
-helm install --set persistence.enabled=true --set persistence.size=1Gi --namespace monitoring \
-  -f eks/grafana_values.yaml grafana grafana/grafana
-
-
-##########   Fluent Bit   ##########
-
-kubectl create -f eks/fluentbit.yaml
-
-echo "FINISHED!"

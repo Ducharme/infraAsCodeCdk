@@ -34,8 +34,13 @@ eksctl create cluster -f ./eksctl/lafleet.yaml --auto-kubeconfig
 eksctl utils write-kubeconfig --cluster=lafleet-cluster --kubeconfig=/home/$USER/.kube/eksctl/clusters/lafleet-cluster
 
 
-# Next 3 lines needed for creating an ARM nodegroup kube-proxy
 eksctl utils update-coredns --cluster $CLUSTER_NAME
 eksctl utils update-kube-proxy --cluster $CLUSTER_NAME --approve
 eksctl utils update-aws-node --cluster $CLUSTER_NAME --approve
 
+# IAM OIDC provider for your cluster https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html
+# Amazon EBS CSI driver IAM role for service accounts https://docs.aws.amazon.com/eks/latest/userguide/csi-iam-role.html
+eksctl create iamserviceaccount --name ebs-csi-controller-sa --namespace kube-system --cluster $CLUSTER_NAME \
+  --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy --approve --role-only --role-name AmazonEKS_EBS_CSI_DriverRole
+# Managing the Amazon EBS CSI driver as an Amazon EKS add-on https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+eksctl create addon --name aws-ebs-csi-driver --cluster $CLUSTER_NAME --service-account-role-arn arn:aws:iam::$AWS_ACCOUNT_ID_VALUE:role/AmazonEKS_EBS_CSI_DriverRole --force

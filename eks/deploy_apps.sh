@@ -127,22 +127,11 @@ kubectl apply -f $VALUES_YAML
 
 # From https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.6.1/aio/deploy/recommended.yaml
-K8S_DASHBOARD_LINK=http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
 
 K8S_DASHBOARD_USER=k8s-dashboard-user
 kubectl create serviceaccount $K8S_DASHBOARD_USER
 kubectl create clusterrolebinding $K8S_DASHBOARD_USER-binding --clusterrole=cluster-admin --serviceaccount=default:$K8S_DASHBOARD_USER
-kubectl proxy &
-
-K8S_DASHBOARD_SECRET=$(kubectl get secrets | grep "$K8S_DASHBOARD_USER" | cut -d ' ' -f1)
-K8S_DASHBOARD_TOKEN=$(kubectl describe secret $K8S_DASHBOARD_SECRET | grep "token:" | cut -d ':' -f2 | tr -d ' ')
-
-echo ""
-echo "*** NOTE - Kubernetes Dashboard (Web UI) ***"
-echo "Link is $K8S_DASHBOARD_LINK"
-echo "Underlying Service Account $K8S_DASHBOARD_USER hold the Secret"
-echo "Login with  with Bearer Token $K8S_DASHBOARD_TOKEN"
-echo ""
 
 
 ##########  Redis Insight (Web UI) ##########
@@ -152,9 +141,3 @@ TEMPLATE_YAML=./eks/reks/redisinsight_service_template.yml
 VALUES_YAML=./eks/reks/redisinsight_service.yml
 cp $TEMPLATE_YAML $VALUES_YAML
 kubectl apply -f $VALUES_YAML
-
-kubectl port-forward service/redisinsight-service 8002:80 &
-
-echo "*** NOTE - Redis Insight (Web UI) ***"
-echo "Link is http://localhost:8002/ on the computer deploying"
-echo ""
