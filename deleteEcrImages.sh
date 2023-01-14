@@ -12,8 +12,8 @@ deleteImagesFromRepo(){
     echo "$IMAGE_DIGESTS" | tr ' ' '\n' | while read item1; do
         IMAGE_DIGEST="$item1"
         if [ ! -z "$IMAGE_DIGEST" ]; then
-        echo "IMAGE_DIGEST=$IMAGE_DIGEST";
-        aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids imageDigest=$IMAGE_DIGEST 1>/dev/null
+          echo "IMAGE_DIGEST=$IMAGE_DIGEST";
+          aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids imageDigest=$IMAGE_DIGEST 1>/dev/null
         fi
     done
   fi

@@ -161,7 +161,7 @@ npm install -g aws-cdk@latest
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv /tmp/eksctl /usr/local/bin
 
-export KUBECONFIG=$KUBECONFIG:~/.kube/eksctl/clusters/lafleet-cluster
+export KUBECONFIG=~/.kube/eksctl/clusters/lafleet-cluster
 export EKSCTL_ENABLE_CREDENTIAL_CACHE=1
 ```
 
@@ -182,7 +182,7 @@ kubectl version --short --client
 
 ## Helm
 
-> To avoid follow exeception, set version to 3.8.2
+> To avoid follow exception, set version to 3.8.2
 > Error: INSTALLATION FAILED: Kubernetes cluster unreachable: exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1"
 
 https://helm.sh/docs/intro/install/
