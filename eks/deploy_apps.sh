@@ -24,6 +24,8 @@ TEMPLATE_YAML=./eks/iot-server_deployment_template.yml
 VALUES_YAML=./eks/iot-server_deployment.yml
 cp $TEMPLATE_YAML $VALUES_YAML
 
+sed -i 's@IMAGE_VALUE@'"$IMAGE_VALUE"'@g' $VALUES_YAML
+sed -i 's@IMAGE_REPO_NAME_VALUE@'"$IMAGE_REPO_NAME_VALUE"'@g' $VALUES_YAML
 sed -i 's@IOT_ENDPOINT@'"$IOT_ENDPOINT"'@g' $VALUES_YAML
 sed -i 's@STREAMID_REQUEST_TOPIC_VALUE@'"$STREAMID_REQUEST_TOPIC"'@g' $VALUES_YAML
 sed -i 's@STREAMID_REPLY_TOPIC_VALUE@'"$STREAMID_REPLY_TOPIC"'@g' $VALUES_YAML
@@ -137,7 +139,7 @@ kubectl create clusterrolebinding $K8S_DASHBOARD_USER-binding --clusterrole=clus
 ##########  Redis Insight (Web UI) ##########
 
 # https://docs.redis.com/latest/ri/installing/install-k8s/
-TEMPLATE_YAML=./eks/reks/redisinsight_service_template.yml
-VALUES_YAML=./eks/reks/redisinsight_service.yml
+TEMPLATE_YAML=./eks/redisinsight_service_template.yml
+VALUES_YAML=./eks/redisinsight_service.yml
 cp $TEMPLATE_YAML $VALUES_YAML
 kubectl apply -f $VALUES_YAML
