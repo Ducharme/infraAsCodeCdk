@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: PROJECT_NAME-cluster
   region: AWS_REGION_VALUE
-  version: "1.23"
+  version: "1.25"
 
 vpc:
   nat:
