@@ -69,7 +69,7 @@ export class IotThing extends Construct {
         principal: certificateArn
       },
     );
-    policyPrincipalAttachment.addDependsOn(props.cfnPolicy);
+    policyPrincipalAttachment.addDependency(props.cfnPolicy);
     policyPrincipalAttachment.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const attachCert = new iot.CfnThingPrincipalAttachment(
@@ -80,7 +80,7 @@ export class IotThing extends Construct {
         principal: certificateArn
       }
     );
-    attachCert.addDependsOn(cfnThing);
+    attachCert.addDependency(cfnThing);
     attachCert.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 
