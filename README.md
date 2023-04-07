@@ -491,6 +491,36 @@ Resources left after:
 * CloudWatch - Log Group
 
 
+# Troubleshooting
+
+## Upadting tools locally
+```
+npm outdated
+npm i npm-check-updates
+npm install
+npm install -g npm@9.6.3
+npm uninstall -g aws-cdk && npm install -g aws-cdk
+sh run_synth.sh
+```
+
+## Errors
+
+If following error message is seen, upgrade CDK CLI:
+> This CDK CLI is not compatible with the CDK library used by your application. Please upgrade the CLI to the latest version.
+> (Cloud assembly schema version mismatch: Maximum schema version supported is 21.0.0, but found 31.0.0)
+```
+npm uninstall -g aws-cdk && npm install -g aws-cdk
+```
+
+When running "sh ./main_create_k8s.sh" the message
+> 2023-04-07 18:20:46 [ℹ]  eksctl version 0.114.0
+> 2023-04-07 18:20:46 [ℹ]  using region ap-southeast-1
+> Error: invalid version, supported values: 1.20, 1.21, 1.22, 1.23
+> 2023-04-07 18:20:47 [!]  cache file /home/$USER/.eksctl/cache/credentials.yaml does not exist.
+> Error: unable to describe cluster control plane: operation error EKS: DescribeCluster, https response error StatusCode: 404, RequestID: 677e97bf-11dc-4e7c-a477-f9c8b99e9ec9, ResourceNotFoundException: No cluster found for name: lafleet-cluster.
+Update eksctl
+
+
 # License
 
 LaFleet PoC is available under the [MIT license](LICENSE). LaFleet PoC also includes external libraries that are available under a variety of licenses, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES) for the list.
