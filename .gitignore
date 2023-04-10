@@ -2,8 +2,10 @@
 __entrypoint__.js
 lib/script-utils/node_modules
 node_modules
+aws/**
 cdk.out
 tmp
+tmp2
 
 kubectl
 get_helm.sh

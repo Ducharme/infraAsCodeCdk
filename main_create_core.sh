@@ -5,6 +5,8 @@ APPROVAL=SKIP
 #APPROVAL=DEFAULT
 #APPROVAL=ALL
 
+START_TIME=`date +%s`
+
 . ./set_env-vars.sh
 
 ### Setup Lambda layer
@@ -112,4 +114,6 @@ node ./lib/script-utils/main.js $ANALYTICS_REPO || { echo "Creating $ANALYTICS_R
 #echo "Overriding CodeProject ArtifactName..."
 #. ./overrideArtifactName.sh
 
-echo "FINISHED!"
+END_TIME=`date +%s`
+RUN_TIME=$((END_TIME-START_TIME))
+echo "FINISHED in $RUN_TIME seconds!"

@@ -67,7 +67,7 @@ export class IotCertificate extends Construct {
 
     var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayer", {
       compatibleRuntimes: [
-        lambda.Runtime.NODEJS_16_X,
+        lambda.Runtime.NODEJS_18_X,
       ],
       code: lambda.Code.fromAsset(`${__dirname}/../tmp/lambda-layers/aws-sdk-client-layer.zip`)
     });
@@ -78,7 +78,7 @@ export class IotCertificate extends Construct {
     const lambdaForCerts = new njs.NodejsFunction(this, 'Lambda::Certificates::NodejsFunction', {
       memorySize: 128,
       timeout: Duration.seconds(15),
-      runtime: lambda.Runtime.NODEJS_16_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: `${__dirname}/lambda-handlers/certificates/index.ts`,
       handler: 'handler',
       bundling: {

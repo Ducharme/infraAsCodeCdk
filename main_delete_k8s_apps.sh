@@ -1,11 +1,11 @@
 #!/bin/sh
 
-START_TIME=`date +%s`
-
 . ./set_env-vars.sh
 
-echo "Calling ./eks/deploy_apps.sh"
-. ./eks/deploy_apps.sh
+START_TIME=`date +%s`
+
+echo "Calling ./eks/delete_apps.sh"
+. ./eks/delete_apps.sh
 
 
 END_TIME=`date +%s`

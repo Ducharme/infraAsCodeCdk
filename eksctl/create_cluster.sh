@@ -1,8 +1,6 @@
 #!/bin/sh
 
 CLUSTER_NAME=$PROJECT_NAME-cluster
-EKS_DEVICE_SQS_SA_NAME=$PROJECT_NAME-eks-sa-sqsdeviceconsumer
-EKS_SHAPE_SQS_SA_NAME=$PROJECT_NAME-eks-sa-sqsshapeconsumer
 
 . ./eks/setEnvVar.sh
 

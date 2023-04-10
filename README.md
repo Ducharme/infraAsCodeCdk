@@ -128,7 +128,7 @@ sudo apt install zip unzip
 Install by running
 ```
 sudo apt install npm
-npm install -g npm@8.9.0
+npm install -g npm@9.6.4
 ```
 
 
@@ -136,11 +136,11 @@ npm install -g npm@8.9.0
 
 Install by running
 ```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 source ~/.bashrc
 source ~/.bash_profile
-nvm list-remote
-nvm install v16.15.0
+nvm list-remote --lts
+nvm install v18.15.0
 ```
 
 
@@ -244,20 +244,20 @@ Copy/paste file .env.example and rename it to .env.production then replace the M
 
 
 
-## Second step: Deploy core infrastructure (13 minutes)
+## Second step: Deploy core infrastructure (15 minutes)
 
 Run below script (tested with Lubuntu 20.04 default terminal)
 
 ```
 npm install
-cdk bootstrap
+sh ./run_bootstrap.sh
 sh ./run_synth.sh
 sh ./main_create_core.sh
 ```
 Note: It is recommended to have FORCE=TRUE set
 
 
-## Third step: Deploy Kubernetes cluster (29 minutes)
+## Third step: Deploy Kubernetes cluster (20 minutes)
 
 Use eksctl by running below script to get an EKS cluster and React Website
 ```
@@ -274,7 +274,15 @@ Approximate timings:
 7. cdk deploy LaFleet-WebsiteStack
 
 
-## Fourth step: Deploy pods on EKS cluster (2 minutes)
+## Fourth step: Deploy shared components on EKS cluster (6 minutes)
+
+Run below script
+```
+sh ./main_create_k8s_core.sh
+```
+
+
+## Fifth step: Deploy pods on EKS cluster (1 minutes)
 
 Run below script
 ```
@@ -477,7 +485,7 @@ Visit http://127.0.0.1:3000 to use Grafana (see first command line for username/
 
 ## Destroying
 
-Execute
+Execute script below or scripts within one by one
 ```
 sh ./main_delete_all.sh
 ```
@@ -498,7 +506,7 @@ Resources left after:
 npm outdated
 npm i npm-check-updates
 npm install
-npm install -g npm@9.6.3
+npm install -g npm@9.6.4
 npm uninstall -g aws-cdk && npm install -g aws-cdk
 sh run_synth.sh
 ```

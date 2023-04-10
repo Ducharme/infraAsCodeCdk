@@ -110,13 +110,13 @@ export class ShapeStack extends Stack {
 
         var lambdaLayer = new lambda.LayerVersion (this, "LambdaLayerSubmitShape", {
             compatibleRuntimes: [
-              lambda.Runtime.NODEJS_16_X,
+              lambda.Runtime.NODEJS_18_X,
             ],
             code: lambda.Code.fromAsset(`${__dirname}/../tmp/lambda-layers/aws-sdk-client-layer.zip`)
           });
 
         const uploadShapeFunction = new lambda.Function(this, 'UploadShapeFunction', {
-            runtime: lambda.Runtime.NODEJS_16_X,
+            runtime: lambda.Runtime.NODEJS_18_X,
             handler: 'index.handler',
             code: lambda.Code.fromAsset(`${__dirname}/lambda-handlers/upload-shape`),
             architecture: lambda.Architecture.ARM_64,
@@ -125,7 +125,7 @@ export class ShapeStack extends Stack {
         });
 
         const shapeSubmittedFunction = new lambda.Function(this, 'ShapeSubmittedFunction', {
-            runtime: lambda.Runtime.NODEJS_16_X,
+            runtime: lambda.Runtime.NODEJS_18_X,
             handler: 'index.handler',
             code: lambda.Code.fromAsset(`${__dirname}/lambda-handlers/submitted-shape`),
             architecture: lambda.Architecture.ARM_64,

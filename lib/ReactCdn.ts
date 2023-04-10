@@ -26,9 +26,10 @@ export class ReactCdn extends Construct {
     const errorPagePath = "/error.html";
     const errorMinTtl = Duration.seconds(300);
     // Creates a distribution from an S3 bucket.
+    const s3o = new cfo.S3Origin(props.react_web_bucket);
     this.distribution = new cdn.Distribution(this, 's3ReactDist', {
         defaultBehavior: {
-            origin: new cfo.S3Origin(props.react_web_bucket), // s3origin,
+            origin: s3o,
             viewerProtocolPolicy: cdn.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             allowedMethods: cdn.AllowedMethods.ALLOW_GET_HEAD,
             cachedMethods: cdn.CachedMethods.CACHE_GET_HEAD,
