@@ -27,6 +27,10 @@ export class ReactCdn extends Construct {
     const errorMinTtl = Duration.seconds(300);
     // Creates a distribution from an S3 bucket.
     const s3o = new cfo.S3Origin(props.react_web_bucket);
+    // BUG: First time it runs might result in CREATE_FAILED with message
+    // Resource handler returned message: "Invalid request provided: AWS::CloudFront::Distribution: 
+    // The parameter origin name must be a domain name. (Service: CloudFront, Status Code: 400, Request ID: 49160418-0076-402d-8612-ff6765959ab5)"
+    // (RequestToken: bd99f5de-54df-1dea-8ef1-7d22338a9f39, HandlerErrorCode: InvalidRequest)
     this.distribution = new cdn.Distribution(this, 's3ReactDist', {
         defaultBehavior: {
             origin: s3o,

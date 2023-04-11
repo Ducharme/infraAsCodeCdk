@@ -30,7 +30,6 @@ waitForPod(){
 }
 
 waitForPod "hello-deployment"
-waitForPod "metrics-server-"
 waitForPod "fluent-bit-"
 
 waitForPod "grafana-"

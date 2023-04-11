@@ -485,9 +485,16 @@ Visit http://127.0.0.1:3000 to use Grafana (see first command line for username/
 
 ## Destroying
 
-Execute script below or scripts within one by one
+Execute script below 
 ```
 sh ./main_delete_all.sh
+```
+or run scripts one by one
+```
+sh ./main_delete_k8s_apps.sh
+sh ./main_delete_k8s_core.sh
+sh ./main_delete_k8s.sh
+sh ./main_delete_core.sh
 ```
 Note: It is recommended to have FORCE=TRUE
 
